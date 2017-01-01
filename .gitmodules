@@ -11,3 +11,4 @@
 [submodule "bash_helper_scripts"]
 	path = bash_helper_scripts
 	url = git@github.com:wrvenkat/bash_helper_scripts.git
+	branch = stable
