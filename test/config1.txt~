@@ -1,0 +1,94 @@
+# This file is used to hold the list of all 3rd party PPAs in the following format.
+# ProgramName   	      	       	    ActualProgramName					PPA			TypeOfInstall					Properties			
+# (the programname for our reference) (the actual programnamname that is used to install)	(the actual PPA)	(is it a basic, desktop or dev software)	1:1 (indicating dependency and script)
+# Comments	       	   	   
+# URLs for further info. (URLs only)
+#
+# Use ! to fill an empty column as a place holder. Do NOT leave empty columns.
+#
+# Property fields detail
+# ----------------------
+# The first flag indicates that there is a separate script available for installing and or configuring this software, in which case that should be run.
+# The second flag indicates whether it is a dependency installation or a standalone installation. Any dependency PPA follows the main PPA where the properties column has the dependency property set to 1 which is the second flag.
+# The third flag indicates a message for TODO should be recorded after installation.
+# The fourth flag indicates it is a 'dist-upgrade' instead of a typical installation. This option is used when a defult installation is to be upgraded after a PPA is added.
+#
+# Most software installations are stright forward and only require the installation of the software provided by the PPA. However, others might require some other dependencies, in which case those should be installed first before installing the actual PPA.
+
+#ProgramName   	     	    ActualProgramName     	  PPA					TypeOfInstall	Properties	Comments
+#Core-basic requirements
+synaptic		    synaptic			  !					b		0:0:0:0		!
+compiz-settings		    compizconfig-settings-manager !					b		0:0:0:0		!
+ppa-purge		    ppa-purge			  ppa:nilarimogard/webupd8		b		0:0:0:0		!
+tlp			    tlp				  !					b		0:0:0:0		!
+tlp-rdw			    tlp-rdw			  ppa:linrunner/tlp			b		0:1:0:0		!
+#Enable the following for ThinkPads
+tp-smapi-dkms		    tp-smapi-dkms		  !					b		0:1:0:0		!
+acpi-call-dkms		    acpi-call-dkms		  !					b		0:1:0:0		!
+dconf-tools		    dconf-tools			  !					b		0:0:0:0		!
+gdebi			    gdebi			  !					b		0:0:0:0		!
+gdebicore		    gdebi-core			  !					b		0:1:0:0		!
+ambiance-dark-red	    ambiance-dark-red		  !					b		1:0:0:0		!
+nemo			    nemo			  ppa:webupd8team/nemo			b		0:0:0:0		!
+nemo-fileroller		    nemo-fileroller	    	  !					b		0:0:0:0		!
+unity-tweak-tool	    unity-tweak-tool		  ppa:freyja-dev/unity-tweak-tool-daily	b		0:0:0:0		!
+terminator		    terminator			  ppa:gnome-terminator/ppa		b		0:0:0:0		!
+notifyosdconfig		    notifyosdconfig		  ppa:amandeepgrewal/notifyosdconfig	b		0:0:0:0		!
+notifyosd		    libnotify-bin		  ppa:leolik/leolik			b		0:1:0:0		!
+#LibreOffice - enable or disable specific versions
+#libreoffice		    libreoffice			  ppa:libreoffice/libreoffice-5-0	b		0:0:0:1		!
+libreoffice		    libreoffice			  ppa:libreoffice/libreoffice-5-2	b		0:0:0:1		!
+#Indicator items
+#sound-switcher		    indicator-sound-switcher	  ppa:yktooo/ppa			d		0:0:0:0		!
+usbindicator		    indicator-usb		  ppa:yunnxx/gnome3			b		0:0:0:0		!
+radiotray		    radiotray			  ppa:estobuntu/ppa			b		0:0:0:0		!
+indicator-keylock	    indicator-keylock		  ppa:tsbarnes/indicator-keylock	b		0:0:0:0		!
+#Text Editors
+sublimetext	     	    sublime-text-installer	  ppa:webupd8team/sublime-text-3	b		0:0:0:0		!
+atom			    atom			  ppa:webupd8team/atom			d		0:0:0:0		!
+artha		    	    artha			  ppa:legends2k/artha			b		0:0:0:0		!
+my-weather-indicator 	    my-weather-indicator	  ppa:atareao/atareao			b		0:0:0:0		!
+uget		     	    uget			  ppa:plushuang-tw/uget-stable		b		0:0:0:0		!
+aria		     	    aria2			  !					b		0:1:0:0		!
+caffeine		    caffeine			  !					b		0:0:0:0		!
+#Browsers
+firefox			    firefox			  ppa:ubuntu-mozilla-security/ppa	b		0:0:0:0		!
+tor-browser	     	    tor-browser		  	  ppa:webupd8team/tor-browser		d		0:0:0:0		!
+chromium		    chromium-browser		  !					b		0:0:0:0		!
+#TODO - Create a script to install chrome-stable--why?
+chrome-stable		    google-chrome-stable	  !					b		1:0:0:0		!
+#Used for gstreamer in trusty. Enable if needed.
+#!			    !  				  ppa:mc3man/trusty-media		d		0:0:0:0		!
+encfs			    gnome-encfs-manager		  ppa:gencfsm/ppa			d		0:0:0:0		!
+transmission		    transmission-gtk		  ppa:transmissionbt/ppa		d		0:0:0:0		!
+#VLC dev channel
+#vlc			    vlc				  ppa:n-muench/vlc2			d		0:0:0:0		!
+vlc			    vlc				  ppa:videolan/stable-daily		b		0:0:0:0		!
+#Music players
+rhythmbox		    rhythmbox	      	   	  ppa:fossfreedom/rhythmbox		d		0:0:0:0		!
+rhythmbox-plugins    	    rhythmbox-plugins  	   	  ppa:fossfreedom/rhythmbox		d		0:1:0:0		!
+sayonara		    sayonara			  ppa:lucioc/sayonara			d		0:0:0:0		!
+clementine		    clementine			  ppa:me-davidsansome/clementine	d		0:0:0:0		!
+audacious-plugins	    audactious			  ppa:nilarimogard/webupd8		d		0:0:0:0		!
+audacious		    audacious			  ppa:nilarimogard/webupd8		d		1:0:0:0		!
+deadbeef		    deadbeef			  ppa:alexey-smirnov/deadbeef		d		0:0:0:0		!
+spotify			    spotify			  !					d		1:0:0:0		!
+variety			    variety			  ppa:peterlevi/ppa			d		0:0:0:0		!
+psensor		     	    psensor			  ppa:jfi/ppa				d		1:0:0:0		!
+solaar		     	    solaar			  ppa:trebelnik-stefina/solaar		b		0:0:0:0		!
+google-drive-ocamlfuse	    google-drive-ocamlfuse        ppa:alessandro-strada/ppa		d		0:0:1:0		https://www.webupd8.org/2013/09/mount-google-drive-in-linux-with-google.html
+timeshift		    timeshift			  ppa:teejee2008/ppa			d		0:0:0:0		!
+wine			    wine			  ppa:ubuntu-wine/ppa			b		0:0:0:0		!
+thunderbird		    thunderbird			  ppa:ubuntu-mozilla-security/ppa	b		0:0:0:0		!
+#TODO - Create script to install Virtualbox
+virtualbox		    virtualbox-5.0		  !					d		1:0:0:0		!
+#copy			    copy			  ppa:paolorotolo/copy			d		0:0:0:0		!
+#TODO - Create script to install Redshift from source at GitHub. For now, we are going with whatever version of redshift is available in Ubuntu's repo.
+redshift		    redshift			  !	     	  			b		1:0:0:0		!
+pidgin			    pidgin			  ppa:pidgin-developers/ppa		b		0:0:0:0		!
+indicator-cpufreq	    indicator-cpufreq		  !					d		0:0:0:0		!
+bless			    bless			  !					b		0:0:0:0		!
+bumblebee		    bumblebee			  !					d		1:0:0:0		!
+emacs			    emacs-snapshot		  ppa:ubuntu-elisp/ppa			d1		0:0:0:0		!
+kdeconnect		    indicator-kdeconnect	  ppa:vikoadi/ppa			d		0:0:0:0		!
+git			    git				  !					b		0:0:0:0		!

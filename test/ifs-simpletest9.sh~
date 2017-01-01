@@ -1,0 +1,12 @@
+#!/bin/bash
+
+val="test1:test2     :test3"
+oldIFS="$IFS"
+IFS=:
+index=1
+#if IFS has a different value than the default, then that value along with any whitespace
+#is used to do wordsplitting
+for item in $val; do
+    printf "Item %s:%s\n" "$index" "$item"
+    ((index+=1))
+done

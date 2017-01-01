@@ -1,0 +1,43 @@
+#!/bin/bash
+
+bus_line=$(lspci | egrep 'VGA|3D' | grep NVIDIA)
+
+if [ -z "$bus_line" ]; then
+	printf "No nVidia card detected. Exiting\n"
+fi
+
+index1=0
+for arr in $bus_line; do
+	if [ $index1 -eq 0 ]; then
+		orig_IFS="$IFS"
+		IFS=.
+		index2=0
+		for bus_id in $arr; do
+			if [ $index2 -eq 0 ]; then
+				break;
+			fi
+		done
+		IFS="$orig_IFS"
+	fi
+done
+
+printf "BusID of nVidia is %s\n" "$bus_id"
+
+line=$(cat /etc/bumblebee/xorg.conf.nvidia | grep "BusID \"PCI:01" -n)
+index1=0
+for grep_str in $line; do
+	if [ $index1 -eq 0 ]; then
+		orig_IFS="$IFS"
+		IFS=:
+		index2=0
+		for line_no in $grep_str; do
+			if [ $index2 -eq 0 ]; then
+				break;
+			fi
+		done
+		IFS="$orig_IFS"
+		break;
+	fi
+done
+
+printf "Line no is %s\n" "$line_no"

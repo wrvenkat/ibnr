@@ -1,0 +1,226 @@
+#!/bin/bash
+
+#TODOS
+#1 - Write a function to change the escape values - \n. \t read from the input to their corresponding ASCII values.
+#2 - Write function to check if there is any overlap between the provided separator values.
+#3 - Write the actual logic to parse the input based on the separator values received
+
+
+# This script implements the following functionality
+# 1. Reads input from STDIN and breaks it up based into lines based on a line delimiting character specified by -l. If unspecified, the default character is '
+# 2. Groups the line read into words based on a grouping character specified by -g. All characters specified between matching grouping character are taken literally. The grouping character can be escaped within this bounds using \. The escape character \ can itself be escaped by having it followed by another \.
+# 3. Separates the grouped strings into words based on field separtation character(s) specified by f. By default, the field separators are the whitespace characters except for the newline characters. More than one character can be specified by separating the characters by ,. , and \ can be escaped by prefixing them with \.
+# 4. 2. and 3. occur at the same time, L->R, based on which character(s) form 2. or 3. comes first.
+# 5. This functionality happens in two phases. First, the input is read and some initial parsing is done and the input stored in an array by the strict_read_put function. Then, when the strict_read_get is called, the parsed array is output per line and the result stored in the strict_result array, where each element in the array is a word.
+
+display_strict_read_help_message(){
+    printf "Description:\n------------\n\t1. Reads input from a stream and breaks it up into lines based on a line de-limiting character. If unspecified, the default character is a newline. \n\t2. Groups the line read into words based on a grouping character. All characters specified between matching grouping character are taken literally. The grouping character can be escaped within this bounds using '\\\'. The escape character '\\\' can itself be escaped by having it prefixed by another '\\\'. If unspecified, the default value is ' (a single quote).\n\t3. Separates the grouped strings into words based on field separtation character(s). By default, the field separators are the whitespace characters, except for the newline characters. More than one character can be specified by separating the characters by ','. ',' and '\\\' can be escaped by prefixing them with '\\\'.\n\t4. 2. and 3. occur at the same time, L->R, based on which character(s) from 2. or 3. comes first.\n\t5. This functionality happens in two phases. First, the input is read and some initial parsing is done and the input stored in an array by the strict_read_put function. Then, when the strict_read_get is called, the parsed array is output per line and the result stored in the strict_result array, where each element in the array is a word.\n\nUsage:\n------\n\tstrict_read_put arguments < <input-stream>\n\tstrict_read_get\n\nArguments\n---------\n\t-h\t\t\t\t\t- Display this message and quit.\n\t--group=<grouping_character>\t\t- The character to be used for grouping. If specified, requires an argument..\n\t--line=<line_separation_character>\t- The line separation character. If specified, requires an argument.\n\t--field=<field_separation_characters>\t- The comma separated characters that is used to spearate input into words. ',' can be escaped using '\\' and '\\\' can be escaped usng '\\\'. If specifed, requires a character or a list of characters.\n\n\tThe strict_read_get populates the strict_result array with each line, starting form the first line. Since, strict_read preserves read input for the program running time, calling strict_read_get repeatedly wraps around the last line to the first. The line currently available can be obtained from strict_current_line. The total number of lines present in the input is the largest number that is presented by strict_current_line after all the input has been parsed into lines. Calling strict_read_get() before any input has been read results in an empty strict_result array.\n"
+}
+
+
+actual_char=
+#returns the actual character for the provided sequence that is escaped with \
+    get_abs_char(){
+    }
+
+
+declare -a field_char_array
+#this function splits the field separator list into an array
+#can only separate the typical \t or \n
+get_field_char_array(){
+
+    if [ -z "$1" ]; then
+	return 0;
+    fi
+    
+    local char=
+    local saw_slash=0
+    local index=0
+    local orig_IFS="$IFS"
+    IFS=
+    while read -r -N 1 char; do
+	printf "char is %s\n" "$char"
+	# any char prefixed by \ is taken literally
+	if [ "$saw_slash" -eq 1 ]; then
+	    field_char_array[$index]="$char"
+	    ((index+=1))
+	    saw_slash=0
+	else
+	    if [ "$char" == '\' ]; then
+		saw_slash=1
+	    elif [ "$char" == ',' ]; then
+		continue;
+	    else
+		field_char_array[$index]="$char"
+		((index+=1))
+	    fi
+	fi
+    done < <(printf "%s" "$1")
+}
+
+
+#prints the field_characters in a comma separated format with , escaped
+print_field_char_array(){
+    local index=0
+    local char=
+    while [ $index -lt ${#field_char_array[*]} ]; do
+	char="${field_char_array[$index]}"
+	if [ "$char" == ',' ]; then
+	    printf '\'
+	fi
+	printf "%s" "$char"
+	if [ $((index+1)) -lt ${#field_char_array[*]} ]; then
+	   printf ","
+	fi
+	((index+=1))
+    done
+    printf "\n"
+}
+
+#remove leading and trailing '
+# accepts one arg, which is the value
+value=
+
+remove_single_quotes() {
+
+    if [ -z "$1" ]; then
+	return 1;
+    fi
+
+    value="$1"
+    
+    #remove leading and trailing '
+    if [ -n "$value" ]; then
+	temp="${value#\'}"
+	temp="${temp%\'}"
+        value="$temp"	
+    fi
+
+    return 0;
+}
+
+DEFAULT_LINE_CHAR=$'\n'
+#to check windows generated files
+ALT_DEFAULT_LINE_CHAR=$'\r'
+declare -a strict_array
+declare -a strict_result
+strict_currrent_line=
+
+strict_read(){
+
+    local args="$@"
+    
+    if [ -z "$args" ]; then
+	printf "Please use -h or --help to find more information\n"
+	#display_strict_read_help_message
+	exit 0
+    fi
+
+    local parsed_args=$(getopt -o h -l line:,group:,field:,help -n 'strict_read' -- "$@" 2>&1)
+
+    echo "$parsed_args"
+    
+    #an ugly way of finding if the parsing of the arguments went through successfully
+    local line_count=$(echo "$parsed_args" | wc -l)
+    local index=1
+    #if we have more than 1 line then one must be the failure
+    if [ $line_count -gt 1 ] || [ -z "$parsed_args" ]; then
+	if [ $line_count -gt 1 ]; then
+	    while read line; do
+		if [ $index -eq 1 ]; then
+		    printf "%s\n" "$line"
+		    ((index+=1))
+		    break
+		fi
+	    done < <(echo "$parsed_args")
+	else
+	    printf "Invalid arguments received. Use -h or --help to see usage.\n"
+	fi
+	exit 0
+    fi
+    
+    #remove leading space(s).
+    local new_args=
+    index=1
+    for i in $parsed_args; do
+	if [ $index -eq 1 ]; then
+	    new_args=$i
+	    ((index+=1))
+	else
+	    new_args+=" $i"
+	fi
+    done
+
+    IFS="$origi_IFS"
+    parsed_args="$new_args"
+    set -- $parsed_args
+
+    while [ -n "$1" ]; do
+	printf "\$1 is %s " "$1"
+	printf "\$2 is %s\n" "$2"
+	case "$1" in
+	    -h | --help) display_strict_read_help_message; exit 0; ;;
+	    --line) line_char="$2"; shift 2;;
+	    --group) group_char="$2"; shift 2;;
+	    --field) field_chars="$2"; shift 2;;
+	    --) shift ;;
+	    *) printf "Invalid arguments received. Use -h or --help to see usage.\n"; exit 0;;
+	esac
+    done
+        
+    if [ -z "$line_char" ]; then
+	line_char=
+	printf "End of line char is <newline-chars>\n"
+    else
+	remove_single_quotes "$line_char"
+	if [ $? -eq 0 ]; then
+	    line_char="$value"
+	fi
+	printf "End of line char is %s\n" "$line_char"
+    fi
+
+    if [ -z "$group_char" ]; then
+	group_char='\'
+    else
+	remove_single_quotes "$group_char"
+	if [ $? -eq 0 ]; then
+	    group_char="$value"
+	fi
+	# get the unescaped verson of this character
+	
+	allbutfirst=${group_char#?}
+	if [ -n "$allbutfirst" ]; then
+	    printf "Only one character can be provided as a grouping character\n";
+	    exit 1
+	fi
+    fi
+    printf "Grouping char is %s\n" "$group_char"
+
+    if [ -z "$field_chars" ]; then
+	field_chars="\t, "
+    fi
+
+    printf "field_chars is %s\n" "$field_chars"
+    
+    remove_single_quotes "$field_chars"
+    if [ $? -eq 0 ]; then
+	field_chars="$value"
+    fi
+    
+    get_field_char_array "$field_chars"
+    printf "The field separator characters are,\n"
+    print_field_char_array
+    
+    #read raw input one character at a time
+#    while read -r -N 1 line; do
+#	if [ "$line" == $'\n' ]; then
+#	    printf "[New Line]"
+#	fi
+#	printf "%s" "$line"
+#   done
+
+}
+
+origi_IFS="$IFS"
+IFS=
+strict_read "$@"

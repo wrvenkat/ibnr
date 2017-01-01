@@ -1,0 +1,77 @@
+#!/bin/bash
+
+#!/bin/bash
+
+#This script is to test if we can write a script that is secure and perform a safe tilde expansion.
+#Tilde Expansion - Explained here - https://www.gnu.org/software/bash/manual/bash.html#Tilde-Expansion
+#Tilde Expansion - For any word beginning with an unquoted ~, all characters (including whitespace[?]) up to the first unquoted slash
+#are considered tilde-prefix.
+# If there are no unquoted characters in this tilde-prefix, then all characters following the ~ are considered as a possible login name.
+# This tilde-prefix is then expanded as required.
+
+#performs a safe expansion of the provided value
+#Returns true if expansion was successful in which case, the expanded value can
+#be obtained from the xpandedPath variable
+#Returns false if expansion failed
+#Takes a string as an argument
+xpandedPath=
+safe_tilde_expansion(){
+    if [ -z "$1" ]; then
+	xpandedPath=
+	return 1;
+    fi
+
+    local given_path="$1"
+    local char=
+    local escaped_char=
+    local saw_quotes=
+    local tilde_present=
+    local saw_FWD_Slash=
+    local saw_slash=0
+
+    printf "Given path is %s\n" "$1"
+    #this is done to prevent read ignoring leading and trailing IFS characters
+    local orig_IFS="$IFS"
+    IFS=
+    #find if there is an unquoted ~
+    while read -r -N 1 char; do
+	#printf "char is %s\n" "$char"
+	#any char prefixed by \ is taken literally
+	if [ "$saw_slash" -eq 1 ]; then	    
+	    #if we see an escaped / or space then we break
+	    if [ "$char" == '/' ] || [ "$char" == $' ' ] || [ "$char" == $'\t' ]; then
+		break;
+	    elif [ "$char" == '~' ]; then
+		tilde_present=1
+	    fi
+	    escaped_char="$escaped_char""$char"
+	else
+	    if [ "$char" == '\' ]; then
+		saw_slash=1
+	    elif [ "$char" == '~' ]; then
+		tilde_present=1
+		escaped_char="$escaped_char""$char"
+	    elif [ "$char" == $' ' ] || [ "$char" == $'\t' ]; then
+		break;
+	    else		
+		 escaped_char="$escaped_char""$char"
+	    fi
+	fi
+    done < <(printf "%s" "$given_path")
+    #restore the IFS
+    IFS="$orig_IFS"
+
+    printf "Path for expansion is %s and tilde_present is %s\n" "$escaped_char" "$tilde_present"
+
+    if eval escaped_char=$escaped_char; then
+	printf "Expanded path is %s\n" "$escaped_char"
+    fi
+
+    return 0
+}
+
+var7="~"
+
+safe_tilde_expansion "$var7"
+
+
