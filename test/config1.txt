@@ -1,5 +1,0 @@
-#ProgramName   	     	    ActualProgramName     	  PPA					TypeOfInstall	Properties	Comments
-synaptic		    synaptic			  !					b		0:0:0:0		This is a multiline comment. And this is how it will be. Line 1.\
-Line2.
-Line3.
-compiz-settings		    compizconfig-settings-manager !					b		0:0:0:0		!
