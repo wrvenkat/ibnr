@@ -1,0 +1,916 @@
+#!/bin/bash
+
+# This script reads from the ppa-list file and installs them based on the options passed as required by the user.
+
+#TODO: Set only the file name and
+DISP_FLG=0
+INSTALL_FLG=0
+ADD_FLG=0
+DBG_FLG=1
+LOG_ERROR_FLG=1
+DEFAULT_TYPE=b
+
+#files and directory
+PPALIST_FILE=ppa_list.conf
+INSTALL_SCRIPTS_DIR="install scripts"
+INSTALLED_PPA_LOG=installed_ppa.conf
+FAILED_PPA_LOG=failed_ppa.conf
+
+# The line content after comments are removed
+xstr=
+#this array stores each line in the ppa_list_file as populated by the create_soft_array function
+#column 7 is the line to which the entry belongs to in the ppa-list file
+#columns 8 and 9 indicate whether the PPA and the software were added and/or installed successfully
+declare -a ppa_soft_array
+ppa_soft_array_count=0
+#this array maintains the comments/messages specified in each entry
+declare -a ppa_soft_array_msg
+declare -A TYPE_ARGS
+
+#Todos:
+#9   - DONE - Separate adding PPA and installing it.
+#3   - DONE - write a function to call scripts for softwares that require installation without a PPA
+#8   - DONE - fix creating both successful and failed installation list
+#7   - DONE - fix the type of installation. i.e write function to parse the type parameters
+#6   - DONE - fix the PPA addition/software installation even if the script flag is set to yes.
+#1   - DONE - write function to parse each line and add PPA
+#0.5 - DONE - rewrite the way the file is parsed and the array created
+#2   - DONE - write a function to install the software for each PPA with functionality to take care of dependency PPA installation.
+#4   - DONE - write a function to print the array for those that failed and use that as a starting point for post-mortem
+
+#prints all the propsx_value_yyyy variables
+print_props_values() {
+    local msg=$(printf "Props1_Script: %s\tProps2_dependency: %s\tProps3_todo: %s\tProps4_upgrade: %s\n" "$props1_value_script" "$props2_value_dependency" "$props3_value_todo" "$props3_value_upgrade")
+    log_error 0 "$msg"
+}
+
+#this function gets the property flags form the property column
+#saves these values in the varaibles propsx_value where x goes from 1 to 4
+#accepts two arguments 1-the props value from the Properties column, 2-the line no
+#returns 0 for success and non-zero for failure
+props1_value_script=
+props2_value_dependency=
+props3_value_upgrade=
+
+get_props_values() {
+    #initialize
+    props1_value_script=
+    props2_value_dependency=
+    props3_value_upgrade=
+
+    if [ -z "$1" ] && [ -z "$2" ]; then
+	log_error 1 "get_props_value(): One of the two required arguments are empty."
+	return 1
+    fi
+    
+    #printf "Received props data is %s\n" "$1"
+    if strict_read --field=":" --line="\n" --group='"' < <(printf "%s" "$1"); then
+	while strict_get; do
+	    #if the line is not empty
+	    if [ -z "$strict_line" ]; then
+		return 1;
+	    fi
+	    local props=
+	    local index=
+	    #count the number of words we obtained
+	    for index in "${!strict_line[@]}"; do
+		props="${strict_line[$index]}";
+		if [ $index -eq 0 ]; then		    
+		    props1_value_script="$props"
+		elif [ $index -eq 1 ]; then
+		    props2_value_dependency="$props"
+		elif [ $index -eq 2 ]; then
+		    props3_value_upgrade="$props"
+		fi
+	    done
+	    #we are supposed to get exactly 9 words, and anything beyond or lesser
+	    # than that indicates incorrect file format
+	    if [ "$index" -ne 2 ]; then
+		log_error 1 "get_props(): Error parsing line. Quitting." "$2"
+		exit 1		
+	    fi
+	done
+    else
+	log_error 1 "get_column_values(): strict_read failed"
+	exit 1
+    fi
+    return 0
+}
+
+#this function retrieves the column value from the give ppa_line and saves it in the variable columnx_value where x ranges from 1 to 8
+#accepts two arguments,
+#1-the ppa_line from where the values are needed
+#returns 0 for success and non-zero for failure
+column1_value_name=
+column2_value_progname=
+column3_value_ppa=
+column4_value_toi=
+column5_value_props=
+column6_value_lineno=
+column7_value_ppastatus=
+column8_value_installstatus=
+
+get_column_values() {
+    #initialize
+    column1_value_name=
+    column2_value_progname=
+    column3_value_ppa=
+    column4_value_toi=
+    column5_value_props=
+    column6_value_lineno=
+    column7_value_ppastatus=
+    column8_value_installstatus=
+    
+    local column_count=1
+    if [ -z "$1" ]; then
+	log_error 0 "get_column_values(): Incorrect or invalid arguments received"
+	return 1
+    fi
+
+    column_count=1
+    for column in $1; do
+	if [ -z "$column" ]; then
+	    msg=$(printf "get_column_values(): No value found for column %s\n" "$column_count")
+	    log_error 1 "$msg"
+	    return 1
+	fi
+	
+	if [ $column_count -eq 1 ]; then
+	    column1_value_name="$column"
+	elif [ $column_count -eq 2 ]; then
+	    column2_value_progname="$column"	
+	elif [ $column_count -eq 3 ]; then
+	    column3_value_ppa="$column"
+	elif [ $column_count -eq 4 ]; then
+	    column4_value_toi="$column"
+	elif [ $column_count -eq 5 ]; then
+	    column5_value_props="$column"
+	elif [ $column_count -eq 6 ]; then
+	    column6_value_lineno="$column"
+	elif [ $column_count -eq 7 ]; then
+	    column7_value_ppastatus="$column"
+	elif [ $column_count -eq 8 ]; then
+	    column8_value_installstatus="$column"
+	fi
+	((column_count+=1))
+    done
+    ((column_count-=1))    
+    if [ "$column_count" -ne 8 ]; then
+	msg=$(printf "More than expected values for columns received for %s." "$column1_value_name")
+	log_error 1 "$msg"
+	return 1
+    fi
+    return 0
+}
+
+#this function prints the ppa_soft_array for unsuccessful PPA addition and/or unsuccessful
+#installation in the original file format
+# takes one argument
+# 1 - 0 for failure only and 1 for successful installation only
+create_log() {
+    local index=0
+    local msg=
+    local array_content=
+    local msg=
+    local success=
+    local local_success=0
+    local ppa_comments=
+
+    if [ -n "$1" ]; then
+	success="$1"
+    else
+	success=-1
+    fi
+    
+    while [ $index -lt $ppa_soft_array_count ]; do
+	array_content=${ppa_soft_array[$index]}
+	if get_column_values "$array_content"; then
+	    if [ "$INSTALL_FLG" -eq 1 ]; then
+		if [ "$column8_value_installstatus" -eq "$success" ] || [ "$success" -eq 255 ]; then
+		    local_success=1
+		else
+		    local_success=0
+		fi
+	    else
+		if [ "$column7_value_ppastatus" -eq "$success" ] || [ "$success" -eq 255 ]; then
+		    local_success=1
+		else
+		    local_success=0
+		fi
+	    fi
+
+	    if [ "$local_success" -eq 1 ]; then
+		if [ $index -eq 0 ]; then
+		    msg+="$(printf "#ProgramName ActualProgramName PPA TypeOfInstall Properties Comments")\n"
+		fi
+		ppa_comments="${ppa_soft_array_msg[$index]}"
+		msg+="$(printf "%s %s %s %s %s %s" "$column1_value_name" "$column2_value_progname" "$column3_value_ppa" "$column4_value_toi" "$column5_value_props" \""$ppa_comments"\")\n"
+	    fi
+	fi
+	((index+=1))
+    done
+    printf "$msg" | column -t
+}
+
+
+#this function updated the provided index in the ppa_soft_array
+#accepts 3 arguments,
+#1 - the index into the ppa_soft_array
+#2 - the column number
+#3 - the value to replace it with
+update_ppa_soft_array(){
+    if [ -z "$1" ] || [ -z "$1" ] || [ -z "$1" ]; then
+	log_error 1 "update_ppa_soft_array(): Invalid number of arguments received."
+	return 1
+    fi
+
+    local index=
+    local column_no=
+    local value=
+    local msg=
+
+    index="$1"
+    column_no="$2"
+    value="$3"
+
+    if [ $column_no -eq 1 ]; then
+	column1_value_name="$value"
+    elif [ $column_no -eq 2 ]; then
+	column2_value_progname="$value"	
+    elif [ $column_no -eq 3 ]; then
+	column3_value_ppa="$value"
+    elif [ $column_no -eq 4 ]; then
+	column4_value_toi="$value"
+    elif [ $column_no -eq 5 ]; then
+	column5_value_props="$value"
+    elif [ $column_no -eq 6 ]; then
+	column6_value_lineno="$value"
+    elif [ $column_no -eq 7 ]; then
+	column7_value_ppastatus="$value"
+    elif [ $column_no -eq 8 ]; then
+	column8_value_installstatus="$value"
+    else
+	log_error 1 "update_ppa_soft_array(): Invalid column number received."
+	return 1
+    fi
+    
+    msg=$(printf "%s %s %s %s %s %s %s %s" "$column1_value_name" "$column2_value_progname" "$column3_value_ppa" "$column4_value_toi" "$column5_value_props" "$column6_value_lineno" "$column7_value_ppastatus" "$column8_value_installstatus")
+    ppa_soft_array["$index"]="$msg"
+
+    return 0
+}
+
+
+#this function prints the ppa_soft_array
+print_ppa_soft_array() {
+    local index=0
+    local msg=
+    local array_content=
+    local msg=
+    local header=0
+    local ppa_comments=
+    for index in "${!ppa_soft_array[@]}"; do
+	array_content="${ppa_soft_array[$index]}"
+	if [ -z "$array_content" ]; then
+	    printf "Array entry %s is empty\n" "$index"
+	    continue;
+	fi
+	ppa_comments="${ppa_soft_array_msg[$index]}"
+	if [ "$ppa_comments" != "!" ]; then
+	    ppa_comments="MSG"
+	fi
+	if get_column_values "$array_content"; then
+	    if [ $header -eq 0 ]; then
+		msg+="$(printf "Name ProgName PPA TOI Property LineNo Comments")\n"
+		header=1
+	    fi
+	    msg+="$(printf "%s %s %s %s %s %s %s\n" "$column1_value_name" "$column2_value_progname" "$column3_value_ppa" "$column4_value_toi" "$column5_value_props" "$column6_value_lineno" "$ppa_comments")\n"
+	fi
+    done
+    printf "$msg" | column -t
+}
+
+#this function adds the given ppa into the repository
+#takes one argument - the index into the ppa_soft_array
+#the rest ones are available in the columnx_value_yyyyy varaibles
+add_ppa() {
+    local ppa=
+    local msg=
+    local index=0
+    #printf "Adding PPA at line %s\n" "$1"
+    if [ -z "$1" ]; then
+	msg=$(printf "add_ppa(): No arguments provided\n")
+	log_error 1 "$msg"
+	return 1
+    fi
+    
+    index="$1"
+    if get_column_values "${ppa_soft_array[$index]}" && [ -n "$column3_value_ppa" ] && [ "$column3_value_ppa" != "!" ]; then
+	ppa="$column3_value_ppa"
+
+	#get the PPA URL
+	local index1=1
+	local ppa_url=
+	local orig_IFS="$IFS"
+	IFS=:
+	for ppa_url in $ppa; do
+	    if [ "$index1" -eq 2 ]; then
+		break;
+	    fi
+	    ((index1+=1))
+	done
+	IFS="$orig_IFS"
+	#add the ppa to the repository if it is not present already
+	if grep -q "$ppa_url" /etc/apt/*.list /etc/apt/sources.list.d/*; then
+	    update_ppa_soft_array "$index" 7 1
+	    msg=$(printf "PPA \"%s\" already present in the repository." "$ppa")
+	    log_error 0 "$msg"
+	    return 0
+	fi
+	#add the PPA
+	msg=$(printf "Adding PPA \"%s\" to the repository..." "$ppa")
+	log_error 0 "$msg"
+	local result=
+	local retVal=
+	result=$(sudo add-apt-repository -y "$ppa" 2>&1)
+	retVal=$?
+	if [ "$retVal" -eq 0 ]; then
+	    #update the status
+	    update_ppa_soft_array "$index" 7 1
+	else
+	    update_ppa_soft_array "$index" 7 0
+	    msg=$(printf "The following error occurred when adding the PPA \"%s\":\n%s\n" "$ppa" "$result")
+	    log_error 1 "$msg"
+	    return -1
+	fi
+	return 0
+    else
+	#if the PPA is empty then, we still mark the status as good for the PPA addition
+	#update the status
+	update_ppa_soft_array "$index" 7 1
+	return 0
+    fi
+}
+
+
+#this function adds all the PPAs in the ppa_soft_array to the repository
+#this function recurses when there are dependency PPAs to be added
+#this function takes an optional argument, which is the index to the ppa_soft_array
+#the return value if -ve indicate failure, if 0 indicates success and
+#if >0, indicates the index to resume adding PPA from
+add_ppas() {
+
+    local index=0
+    local next_index=0
+    local msg=
+    local ppa_line=
+    local ret_value=-1
+
+    if [ -n "$1" ]; then
+	index="$1"
+	ppa_line="${ppa_soft_array[$index]}"
+	#printf "Processing array line %s with value %s\n" "$index" "$ppa_line"
+	if [ -n "$ppa_line" ]; then
+	    #peek into the next line of the column and
+	    #parse the properties column and get the values
+	    next_index=$((index+1))
+	    local next_ppa_line="${ppa_soft_array[$next_index]}"
+    	    
+	    #if the next line is a dependency for the current line, then
+	    #we add that to the PPA recursively	    
+	    if [ -n "$next_ppa_line" ] && get_column_values "$next_ppa_line" && get_props_values "$column5_value_props" "$column6_value_lineno" && [ "$props2_value_dependency" -eq 1 ]; then
+		msg=$(printf "Processing dependency program %s\n" "$column1_value_name")
+		log_error 0 "$msg"
+
+		#we then recursively get to the next line
+		add_ppas "$next_index"
+		ret_value=$?
+
+		#we return the index returned by this recursive call as the return value
+		if [ $ret_value -ne 255 ]; then
+		    next_index="$ret_value"
+		else
+		    return -1
+		fi
+	    fi
+
+	    #add the current line
+	    if add_ppa "$index"; then
+		return "$next_index"
+	    else
+		return -1
+	    fi
+	else
+	    msg=$(printf "add_ppas(): Encountered error when retrieving item no %s from ppa_soft_array" "$index")
+	    log_error 1 "$msg"
+	    return -1
+	fi
+    else
+	index=0
+	while [ "$index" -lt "$ppa_soft_array_count" ]; do
+	    add_ppas "$index"
+	    ret_value=$?
+	    #printf "RetVal is %s\n" "$ret_value"
+	    if [ "$ret_value" -ne 255 ]; then
+		index="$ret_value"
+	    else
+		((index+=1))
+	    fi
+	done
+    fi
+}
+
+
+#this function runs the appropriate script
+#accepts two arguments,
+#1 - the software for which we need to call the script
+#2 - the index into the array
+call_script(){
+    if [ -z "$1" ] || [ -z "$2" ]; then
+	log_error 1 "call_script(): Required arguments not provided."
+	return 1
+    fi
+    
+    local soft="$1"
+    local index="$2"
+    if ! [ -d "$INSTALL_SCRIPTS_DIR" ]; then
+	log_error 1 "Install scripts directory not present."
+	return 1
+    fi
+
+    #get the absolute path for the backup file name
+    local script_path=$(printf "%s-install.sh" "$soft")
+    script_path="$(cd "$INSTALL_SCRIPTS_DIR"; echo "$(pwd)/$script_path")"
+    if ! [ -a "$script_path" ]; then
+	msg=$(printf "No install script found for %s." "$soft")
+	log_error 1 "$msg"
+	return 1
+    fi
+
+    local retVal=0
+    msg=$(printf "call_script(): calling \"bash %s\"\n" "$script_path")
+    log_error 0 "$msg"
+    local result=$(bash "$script_path" 2>&1)
+    retVal=$?
+    if [ "$retVal" -eq 0 ]; then
+	update_ppa_soft_array "$index" 8 1
+    else
+	msg=$(printf "install_soft(): The following error occurred when calling script for software \"%s\": \n%s\n" "$soft" "$result")
+	log_error 1 "$msg"
+	#we are not storing the error message that was returned during the script call
+	update_ppa_soft_array "$index" 8 0
+	return 1	
+    fi
+    return "$retVal"
+}
+
+#this function install the software given for the ppa into the repository
+#takes one argument - the index into the ppa_soft_array
+#the rest ones are available in the columnx_value_yyyyy varaibles
+install_soft() {
+    local soft=
+    local msg=
+    local index=0
+    
+    if [ -z "$1" ]; then
+	msg=$(printf "install_soft(): No arguments provided\n")
+	log_error 1 "$msg"
+	return 1
+    fi
+    
+    index="$1"
+    #printf "Processing PPA %s at line %s\n" "$1"
+    if get_column_values "${ppa_soft_array[$index]}"; then
+	if [ -n "$column2_value_progname" ] && [ "$column2_value_progname" != "!" ]; then
+	    #if any of the softwares require a script based installation
+	    if get_props_values "$column5_value_props" "$column6_value_lineno" && [ "$props1_value_script" -eq 1 ]; then
+		msg=$(printf "Installation of %s requires a script.\n" "$column2_value_progname")
+		log_error 0 "$msg"
+		#call_install_script
+		call_script "$column2_value_progname" "$index"
+	    else
+		#printf "install_ppa() processing PPA_LINE %s for index %s\n" "$column6_value_lineno" "$index"
+		soft="$column2_value_progname"
+		#printf "column8 value for %s is %s\n" "$soft" "$column7_value_ppastatus"
+		if [ -n "$column7_value_ppastatus" ] && [ "$column7_value_ppastatus" -eq 1 ]; then
+		    #install the ppa to the repository
+		    msg=$(printf "Installing software \"%s\"..." "$soft")
+		    log_error 0 "$msg" "$2"		    
+		    local retVal=0
+		    local result=
+		    #we also use --allow-unauthenticated
+		    result=$(sudo apt-get install -y --allow-unauthenticated "$soft" 2>&1)
+		    retVal=$?
+		    if [ "$retVal" -eq 0 ]; then
+			#update the status
+			update_ppa_soft_array "$index" 8 1
+		    else
+			msg=$(printf "install_soft(): The following error occurred when trying to install software \"%s\": \n%s\n" "$soft" "$result")
+			log_error 1 "$msg" "$2"
+			#we are not storing the error message that was returned during the script call
+			update_ppa_soft_array "$index" 8 0
+		    fi
+		fi
+	    fi
+	else
+	    #if the progname is empty then, we still mark the status as good for
+	    #update the status
+	    update_ppa_soft_array "$index" 8 1
+	fi
+    fi
+    return 0
+}
+
+
+#this function installs all the PPAs in the ppa_soft_array to the repository
+#this function recurses when there are dependency PPAs to be installed
+#this function takes an optional argument, which is the index to the ppa_soft_array
+#the return value if -ve indicate failure, if 0 success and if >0, indicates the index to resume installing PPA from
+install_softs() {
+
+    local index=0
+    local next_index=0
+    local msg=
+    local ppa_line=
+    local ret_value=-1
+
+    if [ -n "$1" ]; then
+	index="$1"
+	ppa_line="${ppa_soft_array[$index]}"
+	#printf "Processing array line %s at index %s\n" "$ppa_line" "$index" 
+	if [ -n "$ppa_line" ]; then
+	    #peek into the next line of the column and
+	    #parse the properties column and get the values
+	    next_index=$((index+1))
+	    local next_ppa_line="${ppa_soft_array[$next_index]}"
+    	    
+	    #if the next line is a dependency for the current line, then
+	    #we install that software recursively
+	    if [ -n "$next_ppa_line" ] && get_column_values "$next_ppa_line" && get_props_values "$column5_value_props" "$column6_value_lineno" && [ "$props2_value_dependency" -eq 1 ]; then
+		msg=$(printf "Processing dependency program %s\n" "$column1_value_name")
+		log_error 0 "$msg"
+		
+		#we then recursively get to the next line
+		install_softs "$next_index"
+		ret_value=$?
+
+		#we return the index returned by this recursive call as the return value
+		if [ $ret_value -ne 255 ]; then
+		    next_index="$ret_value"
+		else
+		    return -1
+		fi
+	    fi
+
+	    #install the current line if the PPA was added successfully
+	    if install_soft "$index"; then
+		return "$next_index"
+	    else
+		return -1
+	    fi
+	else
+	    msg=$(printf "install_softs(): Encountered error when retrieving item no %s from ppa_soft_array" "$index")
+	    log_error 1 "$msg"
+	    return -1
+	fi
+    else
+	index=0
+	while [ "$index" -lt "$ppa_soft_array_count" ]; do
+	    install_softs "$index"
+	    ret_value=$?
+	    if [ "$ret_value" -ne 255 ]; then
+		index="$ret_value"
+		#printf "Retvalue is %s\n" "$index"
+	    else
+		return -1
+	    fi
+	done
+    fi
+    return 0
+}
+
+#this function calls other function that adds the PPA
+add_all_ppa() {
+    log_error 0 "Adding to repository...."
+    #call the add_ppas function
+    add_ppas ""
+    local ret_value=$?
+    if [ $ret_value -ne 255 ]; then
+       return "$ret_value"
+    else
+	return 1
+    fi
+}
+
+
+#bootstrap function to installing the softwares
+#this function updates the repository, installs any updates and then
+#installs the individual softwares from the ppa_soft_array
+install_all_softs(){
+    #if we are just installing, then we need to set the status of the PPA
+    if [ "$ADD_FLG" -eq 0 ]; then
+	local index=0
+	for index in "${!ppa_soft_array[@]}"; do
+	    local array_content="${ppa_soft_array[$index]}"
+	    #printf "Array content is %s\n" "$array_content"
+	    if get_column_values "$array_content"; then
+		update_ppa_soft_array "$index" 7 1
+	    fi
+	done
+    fi
+    
+    #refresh the repository for upgrades
+    log_error 0 "Refreshing repository..."
+    #fix anything that may be broken
+    status=$(sudo dpkg --configure -a)
+    status=$(sudo apt-get update 2>&1)
+    #apt-get returns 100 on error and 0 on no error
+    #change the return value here as needed
+    if [ $? -eq 101 ]; then #$? -ne 0
+	msg=$(printf "Something went wrong when updating the repository. Status: %s" "$status")
+	log_error 1 "$msg"
+	return 1
+    fi
+    
+    log_error 0 "Installing any updates after refresh..."
+    #(sudo apt-get upgrade &> /dev/null)
+    if ! sudo apt-get -y upgrade &> /dev/null; then
+	msg=$(printf "Something went wrong when upgrading. Status: %s" "$status")
+	log_error 1 "$msg"
+	return 1
+    fi
+    
+    #install the softwares
+    if ! install_softs; then
+	log_error 1 "install_all_softs(): Something went wrong installing the softwares."
+	return 1
+    fi
+    return 0
+}
+
+#function to parse the file
+parse_file() {
+    if strict_read --field="\t,\s" --group='"' --line="\n" --comment="#" < "$PPALIST_FILE"; then
+	while strict_get; do
+	    #if the line is not empty
+	    if [ -z "$strict_line" ]; then
+		continue;
+	    fi
+	    local msg=
+	    local index=
+	    local comments=
+	    #count the number of words we obtained
+	    for index in "${!strict_line[@]}"; do
+		:
+	    done
+	    #we are supposed to get exactly 6 words, and anything beyond or lesser
+	    # than that indicates incorrect file format
+	    if [ "$index" -ne 5 ]; then
+		log_error 1 "parse_file(): Error parsing line. Quitting." "$strict_index"
+		exit 1
+	    else
+		#if we did get the right number if words, we add in the rest of the column values
+		for index in "${!strict_line[@]}"; do
+		    if [ "$index" -eq 0 ]; then
+			msg+=$(printf "%s" "${strict_line[$index]}")
+		    elif [ "$index" -eq 5 ]; then
+			msg+=$(printf " %s 0 0" "$strict_index")
+			#column 5 is the comments which is saved in a separate array but indexed
+			#with the same index number
+			comments=$(printf "%s" "${strict_line[$index]}")
+		    else
+			msg+=$(printf " %s" "${strict_line[$index]}")
+		    fi			
+		done
+	    fi
+	    #printf "Msg: %s\n" "$msg"
+	    #printf "Comments: %s\n" "$comments"
+	    #add this line only if it is of the same type as the ones provided
+	    if get_column_values "$msg"; then
+		#export the TYPE_ARGS array
+		export TYPE_ARGS
+		#we check the condition in a sub-shell because
+		#otherwise it'd interfere with our strict_read
+		if (is_same_type "$column4_value_toi"); then
+		    ppa_soft_array[$ppa_soft_array_count]="$msg"
+		    ppa_soft_array_msg[$ppa_soft_array_count]="$comments"
+		    ((ppa_soft_array_count+=1))
+		fi
+	    fi
+	done
+    else
+	log_error 1 "parse_file(): strict_read failed."
+	exit 1
+    fi
+    return 0
+}
+
+main() {
+    #source in the strict_read.sh scrip so that it can be used later
+    source "helper scripts/strict_read.sh"
+    
+    #parse the args
+    parse_args "$@"
+
+    #check if the file exists or not
+    if [ -z "$PPALIST_FILE" ] || ! [ -s "$PPALIST_FILE" ]; then
+	log_error 1 "Config file doesn't exist."
+	exit 1
+    fi
+    
+    #parse the file
+    parse_file
+
+    #display array
+    if [ "$DISP_FLG" -eq 1 ]; then
+	print_ppa_soft_array
+    fi
+
+    #add PPAS
+    if [ "$ADD_FLG" -eq 1 ];then
+	#add the PPAs
+	if ! add_all_ppa; then
+	    return 1;
+	fi
+    fi
+
+    #install PPAs
+    if [ "$INSTALL_FLG" -eq 1 ];then
+	#install softwares
+	if ! install_all_softs; then
+	    return 1;
+	fi
+    fi
+
+    #create log
+    if [ "$INSTALL_FLG" -eq 1 ] || [ "$ADD_FLG" -eq 1 ]; then
+	create_log 1 > "$INSTALLED_PPA_LOG"
+	local fail_log=$(create_log 0)
+	if [ -n "$fail_log" ]; then
+	    echo "$fail_log" > "$FAILED_PPA_LOG"
+	fi
+    fi
+}
+
+
+#Due to the requirement of parsing arguments passed and with the restriction that getopt has some
+#different way of parsing and outputting the optional parameter passed to short options, we are
+#limiting the way arguemnts can be passed in unambiguously - See man getopt
+display_help_message(){
+    printf "Description:\n------------\n\tThis script installs most commonly required software on an Ubuntu system. The script installs softwares from PPA channels and also runs some additional scripts to install softwares to be compiled form source. The script parses a PPA list file with configuration information to do this. Output includes a similar file which can be used in further processing like trying to re-install failed installations and/or restore configuration information from a backup based on the installed softwares.\n\nUsage:\n------\n\t./install-ppa.sh arguments\n\nArguments\n---------\n\t-h\t\t\t\t- Display this message and quit.\n\t--file=ppa-list-file-path\t- The file to be used for displaying or installing instead of the default one.\n\t--list\t\t\t\t- Display the contents of the PPA list file provided as argument to the file option. If this is not provided, display the default file.\n\t--add\t\t\t\t- Add all the repositories for the softwares as specified by type and in the provided PPA config file.\n\t--install\t\t\t- Install the contents of the PPA list file provided as argument to the file option. If not provided, install the default file.\n\t--type=[b,d,d1,d2...]\t\t- Used in conjuction with --list and --install options, a value to this option indicates the type of software to be displayed or installed. Values can be comma separated in which case all matching types are installed. By default, the base level indicated by the value b is used. b - basic, d - desktop, d1 - development, dx - other types of installation if present in the target PPA list file.\n"
+}
+
+#compares a type array to the one provided
+#accepts one argument,
+#1 - a type array
+is_same_type(){
+    if [ -z "$1" ]; then
+	return 1
+    fi
+
+    #get the type array for given one
+    if strict_read --field="\t,\s,\," < <(printf "%s" "$1"); then
+	while strict_get; do
+	    #if the line is not empty
+	    if [ -z "$strict_line" ]; then
+		return 1;
+	    fi
+	    local target_type1=
+	    for index in "${!strict_line[@]}"; do
+		target_type1="${strict_line[$index]}"
+		#for each provided type, check if the current type
+		local target_type2=		
+		for target_type2 in "${!TYPE_ARGS[@]}"; do
+		    #printf "Type1 is %s and type2 is %s\n" "$target_type1" "$target_type2"
+		    if [ "$target_type1" == "$target_type2" ]; then
+			return 0;
+		    fi
+		done
+	    done
+	done
+    else
+	log_error 1 "is_same_type(): strict_read failed"
+	exit 1
+    fi    
+    return 1
+}
+
+#parses the value received for the --type arguments and populates the TYPE_ARGS associative array
+#takes one argument - the string to parsed into an associative array
+parse_types(){    
+    local type_str="$1"
+    #go over the values and populate the TYPE_ARGS array
+    #do some further processing on the option arguments to remove enclosing quotes
+    local temp="${type_str#\'}"
+    temp="${temp%\'}"
+    type_str="$temp"
+
+    #set the base type if nothing given
+    if [ -z "$type_str" ]; then
+	TYPE_ARGS["$DEFAULT_TYPE"]=1
+	return 0;
+    fi
+    
+    if strict_read --field="\t,\s,\," --group='"' --line="\n" --comment="#" < <(printf "%s" "$type_str"); then
+	while strict_get; do
+	    #if the line is not empty
+	    if [ -z "$strict_line" ]; then
+		return 1;
+	    fi
+	    local type=
+	    for index in "${!strict_line[@]}"; do
+		type="${strict_line[$index]}"
+		TYPE_ARGS["$type"]=1
+	    done
+	done
+    else
+	log_error 1 "parse_types(): strict_read failed."
+	exit 1
+    fi    
+    return 0
+}
+
+# read the options, parse them and set some global variables
+parse_args(){
+    local file_arg=
+    local args="$@"
+    
+    if [ -z "$args" ]; then
+	display_help_message
+	exit 0
+    fi
+
+    local parsed_args=$(getopt -o h -l list,install,add,help,type::,file: -n 'install-ppa' -- "$@" 2>&1)
+
+    #an ugly way of finding if the parsing of the arguments went through successfully
+    local line_count=$(echo "$parsed_args" | wc -l)
+    local index=1
+    #if we have more than 1 line then one must be the failure
+    if [ $line_count -gt 1 ] || [ -z "$parsed_args" ]; then
+	if [ $line_count -gt 1 ]; then
+	    while read line; do
+		if [ $index -eq 1 ]; then
+		    printf "%s\n" "$line"
+		    ((index+=1))
+		    break
+		fi
+	    done < <(echo "$parsed_args")
+	else
+	    printf "Invalid arguments received. Use -h or --help to see usage.\n"
+	fi
+	exit 0
+    fi
+    
+    #remove leading space(s).
+    local new_args=
+    index=1
+    for i in $parsed_args; do
+	if [ $index -eq 1 ]; then
+	    new_args=$i
+	    ((index+=1))
+	else
+	    new_args+=" $i"
+	fi
+    done
+
+    parsed_args="$new_args"
+    set -- $parsed_args
+
+    local type_arg=
+    local valid_args=0
+    while [ -n "$1" ]; do
+	case "$1" in
+	    -h | --help) display_help_message; exit 0; ;;
+	    --list) DISP_FLG=1; shift; valid_args=1 ;;
+	    --install) INSTALL_FLG=1; shift; valid_args=1 ;;
+	    --add) ADD_FLG=1; shift; valid_args=1;;
+	    --type) type_arg=$2; shift 2; valid_args=1;;
+	    --file) file_arg=$2; shift 2; valid_args=1;;
+	    --) shift ;;
+	    *) printf "Invalid arguments received. Use -h or --help to see usage.\n"; exit 0;;
+	esac
+    done
+
+    if [ $valid_args -eq 0 ]; then
+	printf "Invalid/no arguments received. Use -h or --help to see usage.\n"
+	exit 1;
+    fi
+    
+    #parse the args and get the types to be installed
+    parse_types "$type_arg"
+
+    if [ -n "$file_arg" ]; then
+	temp="${file_arg#\'}"
+	temp="${temp%\'}"
+        file_arg="$temp"
+	PPALIST_FILE="$file_arg"
+    fi
+    #printf "After parsing values are,\nDISP_FLG:%s\nINSTALL_FLG=%s\nTYPE_ARG:%s\nFILE_ARG:%s\n" "$DISP_FLG" "$INSTALL_FLG" "$TYPE_ARG" "$PPALIST_FILE"
+}
+
+if ! source "helper scripts/logger.sh"; then
+    printf "Failed to load logger. Exiting\n"
+    exit 1
+fi
+
+main "$@"

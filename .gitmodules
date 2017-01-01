@@ -1,0 +1,7 @@
+[submodule "bnr"]
+	path = bnr
+	url = git@github.com:wrvenkat/bnr.git
+	branch = stable
+[submodule "bnr-conf"]
+	path = bnr-conf
+	url = git@github.com:wrvenkat/bnr-conf.git
