@@ -2,9 +2,6 @@
 	path = bnr
 	url = git@github.com:wrvenkat/bnr.git
 	branch = stable
-[submodule "bnr-conf"]
-	path = bnr-conf
-	url = git@github.com:wrvenkat/bnr-conf.git
 [submodule "install_scripts"]
 	path = install_scripts
 	url = git@github.com:wrvenkat/install_scripts.git
