@@ -9,3 +9,6 @@
 	path = bash_helper_scripts
 	url = git@github.com:wrvenkat/bash_helper_scripts.git
 	branch = stable
+[submodule "ibnr-conf"]
+	path = ibnr-conf
+	url = git@github.com:wrvenkat/ibnr-conf.git
