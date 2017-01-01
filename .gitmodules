@@ -8,3 +8,6 @@
 [submodule "install_scripts"]
 	path = install_scripts
 	url = git@github.com:wrvenkat/install_scripts.git
+[submodule "bash_helper_scripts"]
+	path = bash_helper_scripts
+	url = git@github.com:wrvenkat/bash_helper_scripts.git
