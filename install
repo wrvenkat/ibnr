@@ -2,7 +2,6 @@
 
 # This script reads from the ppa-list file and installs them based on the options passed as required by the user.
 
-#TODO: Set only the file name and
 DISP_FLG=0
 INSTALL_FLG=0
 ADD_FLG=0
@@ -10,7 +9,7 @@ DBG_FLG=1
 LOG_ERROR_FLG=1
 DEFAULT_TYPE=b
 
-#files and directory
+#default files and directory
 PPALIST_FILE=ppa_list.conf
 INSTALL_SCRIPTS_DIR="install scripts"
 INSTALLED_PPA_LOG=installed_ppa.conf
