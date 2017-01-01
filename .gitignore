@@ -1,0 +1,10 @@
+#Ignore the following file types
+
+#Ignore temp files by emacs
+*~
+
+#Ignore auto-save files by emacs
+*\#
+
+#Ignore locked files by emacs
+\.\#*
