@@ -32,10 +32,12 @@ ibnr is a tool or a set of tools that lets you install and configure some of the
   
 ## Usage
   
-> This script installs most commonly required software on an Ubuntu system. The script installs softwares from PPA channels and also runs some additional scripts to install softwares to be compiled form source. The script parses a PPA list file with configuration information to do this. Output includes a similar file which can be used in further processing like trying to re-install failed installations and/or restore configuration information from a backup based on the installed softwares.
+`This script installs most commonly required software on an Ubuntu system. The script installs softwares from PPA channels and also runs some additional scripts to install softwares to be compiled form source. The script parses a PPA list file with configuration information to do this. Output includes a similar file which can be used in further processing like trying to re-install failed installations and/or restore configuration information from a backup based on the installed softwares.`
 
->./install <arguments>
+`./install <arguments>`
 
->Arguments
+`Arguments`
+
 -------------------------------------------------------------------------------
->-h - Display this message and quit.\n\t--file=ppa-list-file-path\t- The file to be used for displaying or installing instead of the default one.\n\t--list\t\t\t\t- Display the contents of the PPA list file provided as argument to the file option. If this is not provided, display the default file.\n\t--add\t\t\t\t- Add all the repositories for the softwares as specified by type and in the provided PPA config file.\n\t--install\t\t\t- Install the contents of the PPA list file provided as argument to the file option. If not provided, install the default file.\n\t--type=[b,d,d1,d2...]\t\t- Used in conjuction with --list and --install options, a value to this option indicates the type of software to be displayed or installed. Values can be comma separated in which case all matching types are installed. By default, the base level indicated by the value b is used. b - basic, d - desktop, d1 - development, dx - other types of installation if present in the target PPA list file.
+
+`-h - Display this message and quit.\n\t--file=ppa-list-file-path\t- The file to be used for displaying or installing instead of the default one.\n\t--list\t\t\t\t- Display the contents of the PPA list file provided as argument to the file option. If this is not provided, display the default file.\n\t--add\t\t\t\t- Add all the repositories for the softwares as specified by type and in the provided PPA config file.\n\t--install\t\t\t- Install the contents of the PPA list file provided as argument to the file option. If not provided, install the default file.\n\t--type=[b,d,d1,d2...]\t\t- Used in conjuction with --list and --install options, a value to this option indicates the type of software to be displayed or installed. Values can be comma separated in which case all matching types are installed. By default, the base level indicated by the value b is used. b - basic, d - desktop, d1 - development, dx - other types of installation if present in the target PPA list file.`
