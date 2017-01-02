@@ -18,22 +18,12 @@ ibnr is a tool or a set of tools that lets you install and configure some of the
   
   ibnr is customizable in that it reads the configuration details of what software to install from the ppa_list.conf file inside the [ibnr-conf](https://github.com/wrvenkat/ibnr-conf) directory which is maintained separately. The install tool handles "dependencies" to an extent. This file is configurable. Please see [ibnr-conf](https://github.com/wrvenkat/ibnr-conf) for more information.
   
-  While ibnr provides support for adding and installing software from PPAs, it also supports installation by running individual build scripts.
-  
-  These instructions will get you a copy of the project geared towards using the tool.
-  
-  1. Get a copy of the project run: 
-  `git clone --recursive https://github.com/wrvenkat/ibnr.git`
-  2. Navigate to ibnr-conf directory and run:
-  `cd ibnr-conf; git checkout <your_ubuntu_version>`  
-  Example: `cd ibnr-conf; git checkout 16.04`
-  3. Navigate back to the project dir and run the tool:
-  `cd ..; ./bnr --list --add --install`
+  While ibnr provides support for adding and installing software from PPAs, it also supports installation by running individual build scripts. 
   
 ## Usage
   
 `This script installs most commonly required software on an Ubuntu system. The script installs softwares from PPA channels and also optionally runs additional scripts to install softwares that need to be compiled form source. The script parses a file with configuration information to do this.`  
-`Output includes an error.log file that logs errors and files successful_ppa_list.conf and failed_ppa_list.conf similar to the config file for successful and failed entries respectfully. These can be used in further processing like trying to re-install failed installations and/or used as secondary config file in restoring configuration by the bnr script.`
+`Output includes an error.log file that logs errors and files, successful_ppa_list.conf and failed_ppa_list.conf similar to the config file for successful and failed entries respectfully. These can be used in further processing like trying to re-install failed installations and/or used as secondary config file in restoring configuration by the bnr script.`
 
 `Running`  
 `./install <arguments>`
@@ -45,3 +35,13 @@ ibnr is a tool or a set of tools that lets you install and configure some of the
 `--add`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`- add the PPA for the softwares.`  
 `--install`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`- install the software present in the config file.`  
 `--type=[b,d,d1,d2...]`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`- used in conjuction with --list and --install options, a value to this option indicates the type of software to be displayed or installed. Values can be comma separated. The default value is b for the base level. (b - basic/core requirements). Other examples would be, d - desktop, dev - development, etc.`
+
+### Example
+  
+  1. Get a copy of the project run: 
+  `git clone --recursive https://github.com/wrvenkat/ibnr.git`
+  2. Navigate to ibnr-conf directory and run:
+  `cd ibnr-conf; git checkout <your_ubuntu_version>`  
+  Example: `cd ibnr-conf; git checkout 16.04`
+  3. Navigate back to the project dir and run the tool:
+  `cd ..; ./bnr --list --add --install`
