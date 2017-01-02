@@ -32,12 +32,12 @@ ibnr is a tool or a set of tools that lets you install and configure some of the
   
 ## Usage
   
-`This script installs most commonly required software on an Ubuntu system. The script installs softwares from PPA channels and also runs some additional scripts to install softwares to be compiled form source. The script parses a PPA list file with configuration information to do this. Output includes a similar file which can be used in further processing like trying to re-install failed installations and/or restore configuration information from a backup based on the installed softwares.`
+`This script installs most commonly required software on an Ubuntu system. The script installs softwares from PPA channels and also optionally runs additional scripts to install softwares that need to be compiled form source. The script parses a PPA list file with configuration information to do this. Output includes a similar file which can be used in further processing like trying to re-install failed installations and/or restore configuration information from a backup based on the installed softwares.`
 
 `./install <arguments>`
 
 `Arguments`  
-`-h`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`- this message and quit.`  
+`-h`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`- this message and quit.`  
 `--file=ppa-list-file-path    - The config file to be used instead of the default one.`  
 `--list                       - Display the contents of the config file.`  
 `--add                        - Add all the repositories for the softwares as specified by type and in the provided config file.`  
