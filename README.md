@@ -32,8 +32,8 @@ ibnr is a tool or a set of tools that lets you install and configure some of the
   
 ## Usage
   
-`This script installs most commonly required software on an Ubuntu system. The script installs softwares from PPA channels and also optionally runs additional scripts to install softwares that need to be compiled form source. The script parses a file with configuration information to do this.  
-Output includes an error.log file that logs errors and files similar to config files for successfuland failed entries. These can be used in further processing like trying to re-install failed installations and/or used as secondary config files in restoring configuration by the bnr script.`
+`This script installs most commonly required software on an Ubuntu system. The script installs softwares from PPA channels and also optionally runs additional scripts to install softwares that need to be compiled form source. The script parses a file with configuration information to do this.`  
+`Output includes an error.log file that logs errors and files similar to config files for successfuland failed entries. These can be used in further processing like trying to re-install failed installations and/or used as secondary config files in restoring configuration by the bnr script.`
 
 `Running`  
 `./install <arguments>`
