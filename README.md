@@ -37,9 +37,6 @@ ibnr is a tool or a set of tools that lets you install and configure some of the
 `./install <arguments>`
 
 `Arguments`
-
--------------------------------------------------------------------------------
-
 `-h                          - Display this message and quit.  
 --file=ppa-list-file-path    - The config file to be used instead of the default one.  
 --list                       - Display the contents of the config file.  
