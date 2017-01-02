@@ -38,12 +38,12 @@ ibnr is a tool or a set of tools that lets you install and configure some of the
 
 #### Example
   
-  1. Get a copy of the project: 
+  1. Get a copy of the project:  
   `git clone --recursive https://github.com/wrvenkat/ibnr.git && git checkout stable`
-  2. Navigate to ibnr-conf directory and the config file for your Ubuntu version:
+  2. Navigate to ibnr-conf directory and the config file for your Ubuntu version:  
   `cd ibnr-conf; git checkout <your_ubuntu_version>`  
   Example: `cd ibnr-conf; git checkout 16.04`
-  3. Navigate back to the project dir and run the tool to add the PPAs and install the software:
+  3. Navigate back to the project dir and run the tool to add the PPAs and install the software:  
   `cd ..; ./bnr --list --add --install`
-  4. Optionally, run the tool again with one of the output file to attempt to install failed ones:
+  4. Optionally, run the tool again with one of the output file to attempt to install failed ones:  
   `./bnr --list --install --file=failed_ppa_list.conf`
