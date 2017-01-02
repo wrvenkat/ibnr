@@ -22,7 +22,7 @@ ibnr is a tool or a set of tools that lets you install and configure some of the
   
   These instructions will get you a copy of the project geared towards using the tool.
   
-  1. Get a copy of the project run:
+  1. Get a copy of the project run: 
   `git clone --recursive https://github.com/wrvenkat/ibnr.git`
   2. Navigate to ibnr-conf directory and run:
   `cd ibnr-conf; git checkout <your_ubuntu_version>`
