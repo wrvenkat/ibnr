@@ -37,9 +37,9 @@ ibnr is a tool or a set of tools that lets you install and configure some of the
 `./install <arguments>`
 
 `Arguments`  
-`-h                          - Display this message and quit.`  
+`-h&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- this message and quit.`  
 `--file=ppa-list-file-path    - The config file to be used instead of the default one.`  
 `--list                       - Display the contents of the config file.`  
 `--add                        - Add all the repositories for the softwares as specified by type and in the provided config file.`  
 `--install                    - Install the software present in the config file.`  
-`--type=[b,d,d1,d2...]        - Used in conjuction with --list and --install options, a value to this option indicates the type of software to be displayed or installed. Values can be comma separated. The default value is b for the base level. (b - basic/core requirements). Other examples would be, d - desktop, dev - development, etc.`  
+`--type=[b,d,d1,d2...]        - Used in conjuction with --list and --install options, a value to this option indicates the type of software to be displayed or installed. Values can be comma separated. The default value is b for the base level. (b - basic/core requirements). Other examples would be, d - desktop, dev - development, etc.`
