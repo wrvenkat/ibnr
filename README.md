@@ -34,6 +34,7 @@ ibnr is a tool or a set of tools that lets you install and configure some of the
   
 `This script installs most commonly required software on an Ubuntu system. The script installs softwares from PPA channels and also optionally runs additional scripts to install softwares that need to be compiled form source. The script parses a PPA list file with configuration information to do this. Output includes a similar file which can be used in further processing like trying to re-install failed installations and/or restore configuration information from a backup based on the installed softwares.`
 
+`Running`
 `./install <arguments>`
 
 `Arguments`  
