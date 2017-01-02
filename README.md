@@ -47,3 +47,11 @@ ibnr is a tool or a set of tools that lets you install and configure some of the
   `cd ..; ./bnr --list --add --install`
   4. Optionally, run the tool again with one of the output file to attempt to install failed ones:  
   `./bnr --list --install --file=failed_ppa_list.conf`
+
+## Contributing
+
+Contributions are welcome. Please see CONTRIBUTE.md.
+
+## LICENSE
+
+[GNU GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
