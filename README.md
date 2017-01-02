@@ -36,7 +36,7 @@ ibnr is a tool or a set of tools that lets you install and configure some of the
 `--install`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`- install the software present in the config file.`  
 `--type=[b,d,d1,d2...]`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`- used in conjuction with --list and --install options, a value to this option indicates the type of software to be displayed or installed. Values can be comma separated. The default value is b for the base level. (b - basic/core requirements). Other examples would be, d - desktop, dev - development, etc.`
 
-### Example
+#### Example
   
   1. Get a copy of the project run: 
   `git clone --recursive https://github.com/wrvenkat/ibnr.git`
@@ -45,3 +45,5 @@ ibnr is a tool or a set of tools that lets you install and configure some of the
   Example: `cd ibnr-conf; git checkout 16.04`
   3. Navigate back to the project dir and run the tool:
   `cd ..; ./bnr --list --add --install`
+  4. Optionally, run the tool again with one of the output file:
+  `./bnr --list --install --file=failed_ppa_list.conf`
