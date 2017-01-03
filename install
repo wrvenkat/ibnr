@@ -27,6 +27,7 @@ declare -a ppa_soft_array_msg
 declare -A TYPE_ARGS
 
 #Todos:
+#10  - TODO - Fix dist-upgrade property action
 #9   - DONE - Separate adding PPA and installing it.
 #3   - DONE - write a function to call scripts for softwares that require installation without a PPA
 #8   - DONE - fix creating both successful and failed installation list
