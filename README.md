@@ -15,7 +15,7 @@ A set of configurable and extensible shell scripts for Ubuntu to add software PP
 
 * ibnr is customizable in that it reads the configuration details of what software to install from the ppa_list.conf file inside the [ibnr-conf](https://github.com/wrvenkat/ibnr-conf) directory which is maintained separately. The install tool handles "dependencies" to an extent. This file is configurable. Please see [ibnr-conf](https://github.com/wrvenkat/ibnr-conf) for more information.
   
-* While ibnr provides support for adding and installing software from PPAs, it also supports installation by running individual build scripts.
+* While ibnr provides support for adding and installing software from PPAs, it also supports installation by running individual build scripts. Please see [install_Scripts](https://github.com/wrvenkat/install_scripts) for more information on this.
 
 * All successful entries that have been installed are logged in the successful_ppa_list.conf file.
 
