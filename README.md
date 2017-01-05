@@ -11,11 +11,17 @@ A set of configurable and extensible shell scripts for Ubuntu to add software PP
   **ibnr** provides a convenient way for you to automate the processes described above to install and if required, also [configure](https://github.com/wrvenkat/bnr) the installed software.
 
 ## Getting Started
-  ibnr is a combination of two main tools - the install tool and the [bnr](https://github.com/wrvenkat/bnr) tool.
+* ibnr is a combination of two main tools - the install tool and the [bnr](https://github.com/wrvenkat/bnr) tool.
+
+* ibnr is customizable in that it reads the configuration details of what software to install from the ppa_list.conf file inside the [ibnr-conf](https://github.com/wrvenkat/ibnr-conf) directory which is maintained separately. The install tool handles "dependencies" to an extent. This file is configurable. Please see [ibnr-conf](https://github.com/wrvenkat/ibnr-conf) for more information.
   
-  ibnr is customizable in that it reads the configuration details of what software to install from the ppa_list.conf file inside the [ibnr-conf](https://github.com/wrvenkat/ibnr-conf) directory which is maintained separately. The install tool handles "dependencies" to an extent. This file is configurable. Please see [ibnr-conf](https://github.com/wrvenkat/ibnr-conf) for more information.
-  
-  While ibnr provides support for adding and installing software from PPAs, it also supports installation by running individual build scripts.
+* While ibnr provides support for adding and installing software from PPAs, it also supports installation by running individual build scripts.
+
+* All successful entries that have been installed are logged in the successful_ppa_list.conf file.
+
+* All unsuccessful entries are the ones where the PPA was failed to be added, the install script failed or the installation failed are logged into failed_ppa_list.conf.
+
+* An error.log is created with output from all operations that failed.
   
 ## Usage
   
