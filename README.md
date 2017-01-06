@@ -8,7 +8,7 @@ A set of configurable and extensible shell scripts for Ubuntu to add software PP
   
   There are however, other teams that do not make their own PPAs available but require that you build the code yourself if you want to use their software. They either require that you checkout their code from their SCM repo or download a tarball and build and install.
   
-  Also, you may seek a setup of the current installation with the same tweaks and customizations that you made. This means, restoring any configuration files or dotfiles for the softwares just installed. Or, taking a backup of the dotfiles information from a previous installation for use later.
+  Also, you may seek a setup of the new installation with the same tweaks and customizations that you made earlier. This means, restoring any configuration files or dotfiles for the softwares just installed. Or, taking a backup of the dotfiles information from a previous or current installation for use later.
   
   **ibnr** provides a convenient way for you to automate the processes described above to install and if required, also [configure](https://github.com/wrvenkat/bnr) the installed software.
 
