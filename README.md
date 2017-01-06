@@ -53,7 +53,7 @@ A set of configurable and extensible shell scripts for Ubuntu to add software PP
 
 ## Contributing
 
-Contributions are welcome. Please see CONTRIBUTE.md.
+Contributions are welcome. Please see the README.md for the submodules for information on contributing.
 
 ## LICENSE
 
