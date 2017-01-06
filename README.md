@@ -2,11 +2,13 @@
 A set of configurable and extensible shell scripts for Ubuntu to add software PPAs, install softwares, backup and/or restore their corresponding dotfiles.
 
 ## Purpose
-  Whenever you freshly install Ubuntu, one of the most popular Linux distro either in a VM or on a physical machine, you often require your favourite software also be installed with their latest and greatest versions with those awesome features. However, Ubuntu only ships their installation images with a particular version of these softwares in their offical respository. You may get the latest version during updates after the installation. Also, depending on the version of the distro, the versions of the software shipped may change and may even become unavailable. Some softwares are not even available for installation right away even not being present in the offical repositories.
+  Whenever you freshly install Ubuntu, in either a VM or on a physical machine, you often require the latest versions of your favourite softwares also be installed along with so that you can just start using it conveniently. However, Ubuntu only ships their installation images with a particular version of these softwares in their offical respository. You may get the latest version during updates after the installation. Also, depending on the version of the distro, the versions of the software shipped may change and may even become unavailable. Some softwares are not even available for installation right away even not being present in the offical repositories.
 
   Softwares, be it whether present in the official repositories or not, often are maintaned in their own PPAs with different channels like stable and testing to distribute them. These PPAs are how most softwares are distributed and how most users of Ubuntu are directed to when they need to install them. Sotware available over these PPAs while not having gone through the validation process for the main/official repository, form the primary source for the best version available besides the official channel. It is also the most convenient way of installing them and recieving updates.
   
   There are however, other teams that do not make their own PPAs available but require that you build the code yourself if you want to use their software. They either require that you checkout their code from their SCM repo or download a tarball and build and install.
+  
+  Also, you may seek a setup of the current installation with the same tweaks and customizations that you made. This means, restoring any configuration files or dotfiles for the softwares just installed. Or, taking a backup of the dotfiles information from a previous installation for use later.
   
   **ibnr** provides a convenient way for you to automate the processes described above to install and if required, also [configure](https://github.com/wrvenkat/bnr) the installed software.
 
