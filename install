@@ -41,7 +41,7 @@ declare -A TYPE_ARGS
 #prints all the propsx_value_yyyy variables
 print_props_values() {
     local msg=$(printf "Props1_Script: %s\tProps2_dependency: %s\tProps3_todo: %s\tProps4_upgrade: %s\n" "$props1_value_script" "$props2_value_dependency" "$props3_value_todo" "$props3_value_upgrade")
-    log_error 0 "$msg"
+    log_msg --msg="$msg"
 }
 
 #this function gets the property flags form the property column
@@ -59,7 +59,7 @@ get_props_values() {
     props3_value_upgrade=
 
     if [ -z "$1" ] && [ -z "$2" ]; then
-	log_error 1 "get_props_value(): One of the two required arguments are empty."
+	log_msg -e --msg="get_props_value(): One of the two required arguments are empty."
 	return 1
     fi
     
@@ -86,12 +86,12 @@ get_props_values() {
 	    #we are supposed to get exactly 9 words, and anything beyond or lesser
 	    # than that indicates incorrect file format
 	    if [ "$index" -ne 2 ]; then
-		log_error 1 "get_props(): Error parsing line. Quitting." "$2"
+		log_msg -e --msg="get_props(): Error parsing line. Quitting." --line="$2"
 		exit 1		
 	    fi
 	done
     else
-	log_error 1 "get_column_values(): strict_read failed"
+	log_msg -e --msg="get_column_values(): strict_read failed"
 	exit 1
     fi
     return 0
@@ -123,7 +123,7 @@ get_column_values() {
     
     local column_count=1
     if [ -z "$1" ]; then
-	log_error 0 "get_column_values(): Incorrect or invalid arguments received"
+	log_msg --msg="get_column_values(): Incorrect or invalid arguments received"
 	return 1
     fi
 
@@ -131,7 +131,7 @@ get_column_values() {
     for column in $1; do
 	if [ -z "$column" ]; then
 	    msg=$(printf "get_column_values(): No value found for column %s\n" "$column_count")
-	    log_error 1 "$msg"
+	    log_msg -e --msg="$msg"
 	    return 1
 	fi
 	
@@ -157,7 +157,7 @@ get_column_values() {
     ((column_count-=1))    
     if [ "$column_count" -ne 8 ]; then
 	msg=$(printf "More than expected values for columns received for %s." "$column1_value_name")
-	log_error 1 "$msg"
+	log_msg -e --msg="$msg"
 	return 1
     fi
     return 0
@@ -220,7 +220,7 @@ create_log() {
 #3 - the value to replace it with
 update_ppa_soft_array(){
     if [ -z "$1" ] || [ -z "$1" ] || [ -z "$1" ]; then
-	log_error 1 "update_ppa_soft_array(): Invalid number of arguments received."
+	log_msg -e --msg="update_ppa_soft_array(): Invalid number of arguments received."
 	return 1
     fi
 
@@ -250,7 +250,7 @@ update_ppa_soft_array(){
     elif [ $column_no -eq 8 ]; then
 	column8_value_installstatus="$value"
     else
-	log_error 1 "update_ppa_soft_array(): Invalid column number received."
+	log_msg -e --msg="update_ppa_soft_array(): Invalid column number received."
 	return 1
     fi
     
@@ -300,7 +300,7 @@ add_ppa() {
     #printf "Adding PPA at line %s\n" "$1"
     if [ -z "$1" ]; then
 	msg=$(printf "add_ppa(): No arguments provided\n")
-	log_error 1 "$msg"
+	log_msg -e --msg="$msg"
 	return 1
     fi
     
@@ -324,12 +324,12 @@ add_ppa() {
 	if grep -q "$ppa_url" /etc/apt/*.list /etc/apt/sources.list.d/*; then
 	    update_ppa_soft_array "$index" 7 1
 	    msg=$(printf "PPA \"%s\" already present in the repository." "$ppa")
-	    log_error 0 "$msg"
+	    log_msg --msg="$msg"
 	    return 0
 	fi
 	#add the PPA
 	msg=$(printf "Adding PPA \"%s\" to the repository..." "$ppa")
-	log_error 0 "$msg"
+	log_msg --msg="$msg"
 	local result=
 	local retVal=
 	result=$(sudo add-apt-repository -y "$ppa" 2>&1)
@@ -340,7 +340,7 @@ add_ppa() {
 	else
 	    update_ppa_soft_array "$index" 7 0
 	    msg=$(printf "The following error occurred when adding the PPA \"%s\":\n%s\n" "$ppa" "$result")
-	    log_error 1 "$msg"
+	    log_msg -e --msg="$msg"
 	    return -1
 	fi
 	return 0
@@ -380,7 +380,7 @@ add_ppas() {
 	    #we add that to the PPA recursively	    
 	    if [ -n "$next_ppa_line" ] && get_column_values "$next_ppa_line" && get_props_values "$column5_value_props" "$column6_value_lineno" && [ "$props2_value_dependency" -eq 1 ]; then
 		msg=$(printf "Processing dependency program %s\n" "$column1_value_name")
-		log_error 0 "$msg"
+		log_msg --msg="$msg"
 
 		#we then recursively get to the next line
 		add_ppas "$next_index"
@@ -402,7 +402,7 @@ add_ppas() {
 	    fi
 	else
 	    msg=$(printf "add_ppas(): Encountered error when retrieving item no %s from ppa_soft_array" "$index")
-	    log_error 1 "$msg"
+	    log_msg -e --msg="$msg"
 	    return -1
 	fi
     else
@@ -427,14 +427,14 @@ add_ppas() {
 #2 - the index into the array
 call_script(){
     if [ -z "$1" ] || [ -z "$2" ]; then
-	log_error 1 "call_script(): Required arguments not provided."
+	log_msg -e --msg="call_script(): Required arguments not provided."
 	return 1
     fi
     
     local soft="$1"
     local index="$2"
     if ! [ -d "$INSTALL_SCRIPTS_DIR" ]; then
-	log_error 1 "Install scripts directory not present."
+	log_msg -e --msg="Install scripts directory not present."
 	return 1
     fi
 
@@ -443,20 +443,20 @@ call_script(){
     script_path="$(cd "$INSTALL_SCRIPTS_DIR"; echo "$(pwd)/$script_path")"
     if ! [ -a "$script_path" ]; then
 	msg=$(printf "No install script found for %s." "$soft")
-	log_error 1 "$msg"
+	log_msg -e --msg="$msg"
 	return 1
     fi
 
     local retVal=0
     msg=$(printf "call_script(): calling \"bash %s\"\n" "$script_path")
-    log_error 0 "$msg"
+    log_msg --msg="$msg"
     local result=$(bash "$script_path" 2>&1)
     retVal=$?
     if [ "$retVal" -eq 0 ]; then
 	update_ppa_soft_array "$index" 8 1
     else
 	msg=$(printf "install_soft(): The following error occurred when calling script for software \"%s\": \n%s\n" "$soft" "$result")
-	log_error 1 "$msg"
+	log_msg -e --msg="$msg"
 	#we are not storing the error message that was returned during the script call
 	update_ppa_soft_array "$index" 8 0
 	return 1	
@@ -474,7 +474,7 @@ install_soft() {
     
     if [ -z "$1" ]; then
 	msg=$(printf "install_soft(): No arguments provided\n")
-	log_error 1 "$msg"
+	log_msg -e --msg="$msg"
 	return 1
     fi
     
@@ -485,7 +485,7 @@ install_soft() {
 	    #if any of the softwares require a script based installation
 	    if get_props_values "$column5_value_props" "$column6_value_lineno" && [ "$props1_value_script" -eq 1 ]; then
 		msg=$(printf "Installation of %s requires a script.\n" "$column2_value_progname")
-		log_error 0 "$msg"
+		log_msg --msg="$msg"
 		#call_install_script
 		call_script "$column2_value_progname" "$index"
 	    else
@@ -495,7 +495,7 @@ install_soft() {
 		if [ -n "$column7_value_ppastatus" ] && [ "$column7_value_ppastatus" -eq 1 ]; then
 		    #install the ppa to the repository
 		    msg=$(printf "Installing software \"%s\"..." "$soft")
-		    log_error 0 "$msg" "$2"		    
+		    log_msg --msg="$msg" "$2"		    
 		    local retVal=0
 		    local result=
 		    #we also use --allow-unauthenticated
@@ -506,7 +506,7 @@ install_soft() {
 			update_ppa_soft_array "$index" 8 1
 		    else
 			msg=$(printf "install_soft(): The following error occurred when trying to install software \"%s\": \n%s\n" "$soft" "$result")
-			log_error 1 "$msg" "$2"
+			log_msg -e --msg="$msg" --line="$2"
 			#we are not storing the error message that was returned during the script call
 			update_ppa_soft_array "$index" 8 0
 		    fi
@@ -548,7 +548,7 @@ install_softs() {
 	    #we install that software recursively
 	    if [ -n "$next_ppa_line" ] && get_column_values "$next_ppa_line" && get_props_values "$column5_value_props" "$column6_value_lineno" && [ "$props2_value_dependency" -eq 1 ]; then
 		msg=$(printf "Processing dependency program %s\n" "$column1_value_name")
-		log_error 0 "$msg"
+		log_msg --msg="$msg"
 		
 		#we then recursively get to the next line
 		install_softs "$next_index"
@@ -570,7 +570,7 @@ install_softs() {
 	    fi
 	else
 	    msg=$(printf "install_softs(): Encountered error when retrieving item no %s from ppa_soft_array" "$index")
-	    log_error 1 "$msg"
+	    log_msg -e --msg="$msg"
 	    return -1
 	fi
     else
@@ -591,7 +591,7 @@ install_softs() {
 
 #this function calls other function that adds the PPA
 add_all_ppa() {
-    log_error 0 "Adding to repository...."
+    log_msg --msg="Adding to repository...."
     #call the add_ppas function
     add_ppas ""
     local ret_value=$?
@@ -620,7 +620,7 @@ install_all_softs(){
     fi
     
     #refresh the repository for upgrades
-    log_error 0 "Refreshing repository..."
+    log_msg --msg="Refreshing repository..."
     #fix anything that may be broken
     status=$(sudo dpkg --configure -a)
     status=$(sudo apt-get update 2>&1)
@@ -628,21 +628,21 @@ install_all_softs(){
     #change the return value here as needed
     if [ $? -eq 101 ]; then #$? -ne 0
 	msg=$(printf "Something went wrong when updating the repository. Status: %s" "$status")
-	log_error 1 "$msg"
+	log_msg -e --msg="$msg"
 	return 1
     fi
     
-    log_error 0 "Installing any updates after refresh..."
+    log_msg --msg="Installing any updates after refresh..."
     #(sudo apt-get upgrade &> /dev/null)
     if ! sudo apt-get -y upgrade &> /dev/null; then
 	msg=$(printf "Something went wrong when upgrading. Status: %s" "$status")
-	log_error 1 "$msg"
+	log_msg -e --msg="$msg"
 	return 1
     fi
     
     #install the softwares
     if ! install_softs; then
-	log_error 1 "install_all_softs(): Something went wrong installing the softwares."
+	log_msg -e --msg="install_all_softs(): Something went wrong installing the softwares."
 	return 1
     fi
     return 0
@@ -666,7 +666,7 @@ parse_file() {
 	    #we are supposed to get exactly 6 words, and anything beyond or lesser
 	    # than that indicates incorrect file format
 	    if [ "$index" -ne 5 ]; then
-		log_error 1 "parse_file(): Error parsing line. Quitting." "$strict_index"
+		log_msg -e --msg="parse_file(): Error parsing line. Quitting." "$strict_index"
 		exit 1
 	    else
 		#if we did get the right number if words, we add in the rest of the column values
@@ -699,7 +699,7 @@ parse_file() {
 	    fi
 	done
     else
-	log_error 1 "parse_file(): strict_read failed."
+	log_msg -e --msg="parse_file(): strict_read failed."
 	exit 1
     fi
     return 0
@@ -714,7 +714,7 @@ main() {
 
     #check if the file exists or not
     if [ -z "$PPALIST_FILE" ] || ! [ -s "$PPALIST_FILE" ]; then
-	log_error 1 "Config file doesn't exist."
+	log_msg -e --msg="Config file doesn't exist."
 	exit 1
     fi
     
@@ -789,7 +789,7 @@ is_same_type(){
 	    done
 	done
     else
-	log_error 1 "is_same_type(): strict_read failed"
+	log_msg -e --msg="is_same_type(): strict_read failed"
 	exit 1
     fi    
     return 1
@@ -824,7 +824,7 @@ parse_types(){
 	    done
 	done
     else
-	log_error 1 "parse_types(): strict_read failed."
+	log_msg -e --msg="parse_types(): strict_read failed."
 	exit 1
     fi    
     return 0
