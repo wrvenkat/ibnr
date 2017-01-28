@@ -874,7 +874,7 @@ parse_args(){
     done
 
     parsed_args="$new_args"
-    set -- $parsed_args
+    eval set -- $parsed_args
 
     local type_arg=
     local valid_args=0
