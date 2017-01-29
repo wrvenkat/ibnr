@@ -811,7 +811,7 @@ parse_types(){
 	return 0;
     fi
     
-    if strict_read --field="\t,\s,\," --group='"' --line="\n" --comment="#" < <(printf "%s" "$type_str"); then
+    if strict_read --field="\t,\s" --group='"' --line="\n" --comment="#" < <(printf "%s" "$type_str"); then
 	while strict_get; do
 	    #if the line is not empty
 	    if [ -z "$strict_line" ]; then
