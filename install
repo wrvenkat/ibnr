@@ -10,8 +10,8 @@ LOG_ERROR_FLG=1
 DEFAULT_TYPE=b
 
 #default files and directory
-PPALIST_FILE=ppa_list.conf
-INSTALL_SCRIPTS_DIR="install scripts"
+PPALIST_FILE="ibnr-conf/ppa_list.conf"
+INSTALL_SCRIPTS_DIR="install_scripts"
 INSTALLED_PPA_LOG=installed_ppa.conf
 FAILED_PPA_LOG=failed_ppa.conf
 
@@ -707,7 +707,7 @@ parse_file() {
 
 main() {
     #source in the strict_read.sh scrip so that it can be used later
-    source "helper scripts/strict_read.sh"
+    source "bash_helper_scripts/strict_read.sh"
     
     #parse the args
     parse_args "$@"
@@ -908,7 +908,7 @@ parse_args(){
     #printf "After parsing values are,\nDISP_FLG:%s\nINSTALL_FLG=%s\nTYPE_ARG:%s\nFILE_ARG:%s\n" "$DISP_FLG" "$INSTALL_FLG" "$TYPE_ARG" "$PPALIST_FILE"
 }
 
-if ! source "helper scripts/logger.sh"; then
+if ! source "bash_helper_scripts/logger.sh"; then
     printf "Failed to load logger. Exiting\n"
     exit 1
 fi
