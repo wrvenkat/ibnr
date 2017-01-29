@@ -769,7 +769,7 @@ is_same_type(){
     fi
 
     #get the type array for given one
-    if strict_read --field="\t,\s,\\," < <(printf "%s" "$1"); then
+    if strict_read --field="\t,\s" < <(printf "%s" "$1"); then
 	while strict_get; do
 	    #if the line is not empty
 	    if [ -z "$strict_line" ]; then
