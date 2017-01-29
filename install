@@ -321,7 +321,7 @@ add_ppa() {
 	done
 	IFS="$orig_IFS"
 	#add the ppa to the repository if it is not present already
-	if grep -q "$ppa_url" /etc/apt/*.list /etc/apt/sources.list.d/*; then
+	if "$(grep -q "$ppa_url" /etc/apt/*.list /etc/apt/sources.list.d/* 2>&1)"; then
 	    update_ppa_soft_array "$index" 7 1
 	    msg=$(printf "PPA \"%s\" already present in the repository." "$ppa")
 	    log_msg --msg="$msg"
