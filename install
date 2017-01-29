@@ -455,7 +455,7 @@ call_script(){
     if [ "$retVal" -eq 0 ]; then
 	update_ppa_soft_array "$index" 8 1
     else
-	msg=$(printf "install_soft(): The following error occurred when calling script for software \"%s\": \n%s\n" "$soft" "$result")
+	msg="$(printf "install_soft(): The following error occurred when calling script for software \"%s\": \n%s\n" "$soft" "$result")"
 	log_msg -e --msg="$msg"
 	#we are not storing the error message that was returned during the script call
 	update_ppa_soft_array "$index" 8 0
