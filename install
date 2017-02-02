@@ -880,7 +880,6 @@ parse_args(){
 
     #remove any new-line chars
     parsed_args="$(tr -d '\n' < <(echo "$parsed_args"))"
-    parsed_args="$new_args"
     eval set -- $parsed_args
 
     local type_arg=
