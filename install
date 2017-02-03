@@ -18,8 +18,6 @@ FAILED_PPA_LOG=failed_ppa.conf
 # The line content after comments are removed
 xstr=
 #this array stores each line in the ppa_list_file as populated by the create_soft_array function
-#column 7 is the line to which the entry belongs to in the ppa-list file
-#columns 8 and 9 indicate whether the PPA and the software were added and/or installed successfully
 declare -a ppa_soft_array
 ppa_soft_array_count=0
 #this array maintains the comments/messages specified in each entry
@@ -27,7 +25,7 @@ declare -a ppa_soft_array_msg
 declare -A TYPE_ARGS
 
 #Todos:
-#10  - TODO - Fix dist-upgrade property action
+#10  - DONE - Fix dist-upgrade property action
 #9   - DONE - Separate adding PPA and installing it.
 #3   - DONE - write a function to call scripts for softwares that require installation without a PPA
 #8   - DONE - fix creating both successful and failed installation list
@@ -677,6 +675,13 @@ install_all_softs(){
     if ! install_softs; then
 	log_msg -e --msg="install_all_softs(): Something went wrong installing the softwares."
 	return 1
+    else
+	#remove any remnants leftover dependencies that are no longer needed
+	local result=
+	result="$(sudo apt-get autoremove -y)"
+	if [ $? -ne 0 ]; then
+	    log_msg -e --msg="Error occurred when trying to remove unwanted dependencies."
+	fi
     fi
     return 0
 }
