@@ -1,4 +1,14 @@
-[submodule "test"]
-	path = test
-	url = https://github.com/wrvenkat/ibnr.git
-	branch = test
+[submodule "bnr"]
+	path = bnr
+	url = https://github.com/wrvenkat/bnr.git
+	branch = stable
+[submodule "install_scripts"]
+	path = install_scripts
+	url = https://github.com/wrvenkat/install_scripts.git
+[submodule "bash_helper_scripts"]
+	path = bash_helper_scripts
+	url = https://github.com/wrvenkat/bash_helper_scripts.git
+	branch = stable
+[submodule "ibnr-conf"]
+	path = ibnr-conf
+	url = https://github.com/wrvenkat/ibnr-conf.git
