@@ -171,10 +171,11 @@ get_column_values() {
     return 0
 }
 
-#this function prints the ppa_soft_array for unsuccessful PPA addition and/or unsuccessful
+#this function prints the ppa_soft_array element for unsuccessful PPA addition and/or unsuccessful
 #installation in the original file format
-# takes one argument
+# takes two arguments
 # 1 - 0 for failure only and 1 for successful installation only
+# 2 - the index for the ppa_soft_array
 create_log() {
     local index=0
     local msg=
@@ -189,35 +190,39 @@ create_log() {
     else
 	success=-1
     fi
-    
-    while [ $index -lt $ppa_soft_array_count ]; do
-	array_content=${ppa_soft_array[$index]}
-	if get_column_values "$array_content"; then
-	    if [ "$INSTALL_FLG" -eq 1 ]; then
-		if [ "$column8_value_installstatus" -eq "$success" ] || [ "$success" -eq 255 ]; then
-		    local_success=1
-		else
-		    local_success=0
-		fi
-	    else
-		if [ "$column7_value_ppastatus" -eq "$success" ] || [ "$success" -eq 255 ]; then
-		    local_success=1
-		else
-		    local_success=0
-		fi
-	    fi
 
-	    if [ "$local_success" -eq 1 ]; then
-		if [ $index -eq 0 ]; then
-		    msg+="$(printf "#ProgramName ActualProgramName PPA TypeOfInstall Properties Comments")\n"
-		fi
-		ppa_comments="${ppa_soft_array_msg[$index]}"
-		msg+="$(printf "%s %s %s %s %s %s" "$column1_value_name" "$column2_value_progname" "$column3_value_ppa" "$column4_value_toi" "$column5_value_props" \""$ppa_comments"\")\n"
+    if [ -n "$2" ]; then
+	index=$2
+    else
+	return 0
+    fi
+    
+    array_content="${ppa_soft_array[$index]}"
+    ppa_comments="${ppa_soft_array_msg[$index]}"
+    if [ -z "$array_content" ]; then
+	return 0
+    fi
+    
+    if get_column_values "$array_content"; then
+	if [ "$INSTALL_FLG" -eq 1 ]; then
+	    if [ "$column8_value_installstatus" -eq "$success" ] || [ "$success" -eq 255 ]; then
+		local_success=1
+	    else
+		local_success=0
+	    fi
+	else
+	    if [ "$column7_value_ppastatus" -eq "$success" ] || [ "$success" -eq 255 ]; then
+		local_success=1
+	    else
+		local_success=0
 	    fi
 	fi
-	((index+=1))
-    done
-    printf "$msg" | column -t
+
+	if [ "$local_success" -eq 1 ]; then
+	    msg="$(printf "%-*s %-*s %-*s %-*s %s %s" "$column1_length_max" "$column1_value_name" "$column2_length_max" "$column2_value_progname" "$column3_length_max" "$column3_value_ppa" "$column4_length_max" "$column4_value_toi" "$column5_value_props" "$ppa_comments")"
+	    printf "Msg is: %s\n" "$msg"
+	fi
+    fi
 }
 
 
@@ -349,6 +354,7 @@ add_ppa() {
 	    update_ppa_soft_array "$index" 7 0
 	    msg=$(printf "The following error occurred when adding the PPA \"%s\":\n%s\n" "$ppa" "$result")
 	    log_msg -e --msg="$msg"
+	    create_log 0 "$index"
 	    return -1
 	fi
 	return 0
@@ -467,6 +473,7 @@ call_script(){
 	log_msg -e --msg="$msg"
 	#we are not storing the error message that was returned during the script call
 	update_ppa_soft_array "$index" 8 0
+	create_log 0 "$index"
 	return 1	
     fi
     return "$retVal"
@@ -537,6 +544,7 @@ install_soft() {
 			log_msg -e --msg="$msg" --line="$2"
 			#we are not storing the error message that was returned during the script call
 			update_ppa_soft_array "$index" 8 0
+			create_log 0 "$index"
 		    fi
 		fi
 	    fi
@@ -686,6 +694,11 @@ install_all_softs(){
     return 0
 }
 
+column1_length_max=0
+column2_length_max=0
+column3_length_max=0
+column4_length_max=0
+
 #function to parse the file
 parse_file() {
     if strict_read --field="\t,\s" --group='"' --line="\n" --comment="#" < "$PPALIST_FILE"; then
@@ -701,7 +714,11 @@ parse_file() {
 	    #count the number of words we obtained
 	    for index in "${!strict_line[@]}"; do
 		:
-		acc_val+="$(printf "%s " "${strict_line[$index]}")"
+		if [ "$index" -eq 5 ]; then
+		    acc_val+="$(printf "%s" "${strict_line[$index]}")"
+		else
+		    acc_val+="$(printf "%s " "${strict_line[$index]}")"
+		fi
 	    done
 	    #we are supposed to get exactly 6 words, and anything beyond or lesser
 	    # than that indicates incorrect file format
@@ -711,17 +728,35 @@ parse_file() {
 		exit 1
 	    else
 		#if we did get the right number if words, we add in the rest of the column values
+		local curr_elem_len=0
 		for index in "${!strict_line[@]}"; do
-		    if [ "$index" -eq 0 ]; then
-			msg+=$(printf "%s" "${strict_line[$index]}")
-		    elif [ "$index" -eq 5 ]; then
-			msg+=$(printf " %s 0 0" "$strict_index")
-			#column 5 is the comments which is saved in a separate array but indexed
-			#with the same index number
-			comments=$(printf "%s" "${strict_line[$index]}")
-		    else
-			msg+=$(printf " %s" "${strict_line[$index]}")
-		    fi			
+		    curr_elem_len="${#strict_line[$index]}"
+		    case $index in
+			0) if [ $column1_length_max -lt $curr_elem_len ]; then
+			       column1_length_max=$curr_elem_len
+			   fi
+			   msg+=$(printf "%s " "${strict_line[$index]}");;
+			1) if [ $column2_length_max -lt $curr_elem_len ]; then
+			       column2_length_max=$curr_elem_len
+			   fi
+			   msg+=$(printf "%s " "${strict_line[$index]}");;
+			2) if [ $column3_length_max -lt $curr_elem_len ]; then
+			       column3_length_max=$curr_elem_len
+			   fi
+			   msg+=$(printf "%s " "${strict_line[$index]}");;
+			3) if [ $column4_length_max -lt $curr_elem_len ]; then
+			       column4_length_max=$curr_elem_len
+			   fi
+			   msg+=$(printf "%s " "${strict_line[$index]}");;
+			4) msg+=$(printf "%s " "${strict_line[$index]}");;
+			5) msg+=$(printf "%s 0 0" "$strict_index")
+			   #column 5 is the comments which is saved in a separate array but indexed
+			   #with the same index number
+			   comments=$(printf "%s" "${strict_line[$index]}");;
+			*) msg="$(printf "parse_file(): Error parsing file. Quitting. Line:%s\n" "$acc_val")"
+			   log_msg -e --msg="$msg" -l "$strict_index";
+			   exit 1;;
+		    esac		
 		done
 	    fi
 	    #printf "Msg: %s\n" "$msg"
@@ -785,10 +820,9 @@ main() {
 
     #create log
     if [ "$INSTALL_FLG" -eq 1 ] || [ "$ADD_FLG" -eq 1 ]; then
-	create_log 1 > "$INSTALLED_PPA_LOG"
-	local fail_log=$(create_log 0)
-	if [ -n "$fail_log" ]; then
-	    echo "$fail_log" > "$FAILED_PPA_LOG"
+	local index=0
+	for index in "${!ppa_soft_array[@]}"; then
+	    create_log 1 "$index"
 	fi
     fi
 }
