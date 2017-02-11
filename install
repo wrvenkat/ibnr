@@ -157,6 +157,8 @@ get_column_values() {
 		log_msg -e --msg="$msg"
 		exit 1		
 	    fi
+	else
+	    printf "Column val without quotes processing is %s\n" "$column"
 	fi
 	
 	if [ $column_count -eq 1 ]; then
