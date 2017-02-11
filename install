@@ -137,6 +137,7 @@ get_column_values() {
 
     column_count=1
     for column in $1; do
+	printf "Column val:%s\n" "$column"
 	if [ -z "$column" ]; then
 	    msg=$(printf "get_column_values(): No value found for column %s\n" "$column_count")
 	    log_msg -e --msg="$msg"
@@ -778,7 +779,6 @@ parse_file() {
 	log_msg -e --msg="parse_file(): strict_read failed."
 	exit 1
     fi
-    printf "Max lengths of columns are: Column1: %s Column2: %s Column2: %s Column4: %s\n" "$column1_length_max" "$column2_length_max" "$column3_length_max" "$column4_length_max"
     return 0
 }
 
