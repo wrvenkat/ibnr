@@ -106,6 +106,7 @@ get_props_values() {
 #this function retrieves the column value from the give ppa_line and saves it in the variable columnx_value where x ranges from 1 to 8
 #accepts two arguments,
 #1-the ppa_line from where the values are needed
+#2-whether bash parsing shouldn't be done. 
 #returns 0 for success and non-zero for failure
 column1_value_name=
 column2_value_progname=
@@ -128,11 +129,16 @@ get_column_values() {
     column6_value_lineno=
     column7_value_ppastatus=
     column8_value_installstatus=
+    local no_quoting_parse=1
     
     local column_count=1
     if [ -z "$1" ]; then
 	log_msg --msg="get_column_values(): Incorrect or invalid arguments received"
 	return 1
+    fi
+
+    if [ -z "$2" ]; then
+	no_quoting_parse=0
     fi
 
     column_count=1
@@ -142,6 +148,16 @@ get_column_values() {
 	    msg=$(printf "get_column_values(): No value found for column %s\n" "$column_count")
 	    log_msg -e --msg="$msg"
 	    return 1
+	fi
+
+	if [ "$no_quoting_parse" -ne 1 ]; then
+	    if bash_quoting_parse "${strict_line[$index]}"; then
+	       column="$quoting_parsed_string"
+	    else
+		msg=$(printf "bash_quoting_parse failed with error:%s" "${strict_line[$index]}")
+		log_msg -e --msg="$msg"
+		exit 1		
+	    fi
 	fi
 	
 	if [ $column_count -eq 1 ]; then
@@ -204,7 +220,7 @@ create_log() {
 	return 0
     fi
     
-    if get_column_values "$array_content"; then
+    if get_column_values "$array_content" 1; then
 	if [ "$INSTALL_FLG" -eq 1 ]; then
 	    if [ "$column8_value_installstatus" -eq "$success" ] || [ "$success" -eq 255 ]; then
 		local_success=1
@@ -734,6 +750,13 @@ parse_file() {
 		    #printf "Line is %s\n" "${strict_line[*]}"
 		    #printf "asdasdasdasd: %s\n" "${strict_line[$index]}"
 		    curr_elem_len="${#strict_line[$index]}"
+		    local result="$(bash_quoting_parse "${strict_line[$index]}" 2>&1)"
+		    local retVal=$?
+		    if [ "$retVal" -ne 0 ]; then
+			msg=$(printf "bash_quoting_parse failed with error:%s" "$result")
+			log_msg -e --msg="$msg"
+			exit 1
+		    fi
 		    case $index in
 			0) if [ $column1_length_max -lt $curr_elem_len ]; then
 			       column1_length_max=$curr_elem_len
@@ -788,6 +811,8 @@ parse_file() {
 main() {
     #source in the strict_read.sh scrip so that it can be used later
     source "bash_helper_scripts/strict_read.sh"
+    #source in bash_quoting_parsing
+    source "bash_helper_scripts/bash_quoting_parsing.sh"
     
     #parse the args
     parse_args "$@"
