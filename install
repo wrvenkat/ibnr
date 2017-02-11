@@ -778,6 +778,7 @@ parse_file() {
 	log_msg -e --msg="parse_file(): strict_read failed."
 	exit 1
     fi
+    printf "Max lengths of columns are: Column1: %s Column2: %s Column2: %s Column4: %s\n" "$column1_length_max" "$column2_length_max" "$column3_length_max" "$column4_length_max"
     return 0
 }
 
