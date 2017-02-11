@@ -702,7 +702,7 @@ column4_length_max=0
 
 #function to parse the file
 parse_file() {
-    if strict_read --field="\t,\s" --group='"' --line="\n" --comment="#" < "$PPALIST_FILE"; then
+    if strict_read --field="\t,\s" --group='"' --line="\n" --comment="#" --esc < "$PPALIST_FILE"; then
 	while strict_get; do
 	    #if the line is not empty
 	    if [ -z "$strict_line" ]; then
