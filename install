@@ -309,7 +309,7 @@ print_ppa_soft_array() {
 	if [ "$ppa_comments" != "!" ]; then
 	    ppa_comments="MSG"
 	fi
-	if get_column_values "$array_content"; then
+	if get_column_values "$array_content" 1; then
 	    if [ $header -eq 0 ]; then
 		msg+="$(printf "Name ProgName PPA TOI Property LineNo Comments")\n"
 		header=1
