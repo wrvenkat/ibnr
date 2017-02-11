@@ -821,9 +821,9 @@ main() {
     #create log
     if [ "$INSTALL_FLG" -eq 1 ] || [ "$ADD_FLG" -eq 1 ]; then
 	local index=0
-	for index in "${!ppa_soft_array[@]}"; then
+	for index in "${!ppa_soft_array[@]}"; do
 	    create_log 1 "$index"
-	fi
+	done
     fi
 }
 
