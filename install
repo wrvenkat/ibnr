@@ -143,7 +143,6 @@ get_column_values() {
 
     column_count=1
     for column in $1; do
-	printf "Column val: %s\n" "$column"
 	if [ -z "$column" ]; then
 	    msg=$(printf "get_column_values(): No value found for column %s\n" "$column_count")
 	    log_msg -e --msg="$msg"
@@ -151,7 +150,7 @@ get_column_values() {
 	fi
 
 	if [ "$no_quoting_parse" -ne 1 ]; then
-	    if bash_quoting_parse "${strict_line[$index]}"; then
+	    if bash_quoting_parse "$column"; then
 	       column="$quoting_parsed_string"
 	    else
 		msg=$(printf "bash_quoting_parse failed with error:%s" "${strict_line[$index]}")
@@ -293,7 +292,6 @@ update_ppa_soft_array(){
 
 #this function prints the ppa_soft_array
 print_ppa_soft_array() {
-    pritnf "adsadasdasdHERE\n"
     local index=0
     local msg=
     local array_content=
@@ -303,7 +301,8 @@ print_ppa_soft_array() {
     for index in "${!ppa_soft_array[@]}"; do
 	array_content="${ppa_soft_array[$index]}"
 	if [ -z "$array_content" ]; then
-	    printf "Array entry %s is empty\n" "$index"
+	    msg="$(printf "Array entry %s is empty\n" "$index")"
+	    log_msg -e --msg="$msg"
 	    continue;
 	fi
 	ppa_comments="${ppa_soft_array_msg[$index]}"
