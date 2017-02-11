@@ -731,6 +731,7 @@ parse_file() {
 		#if we did get the right number if words, we add in the rest of the column values
 		local curr_elem_len=0
 		for index in "${!strict_line[@]}"; do
+		    printf "Line is %s\n" "${strict_line[*]}"
 		    printf "asdasdasdasd: %s\n" "${strict_line[$index]}"
 		    curr_elem_len="${#strict_line[$index]}"
 		    case $index in
