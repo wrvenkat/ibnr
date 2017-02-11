@@ -137,7 +137,7 @@ get_column_values() {
 
     column_count=1
     for column in $1; do
-	printg "Column val: %s\n" "$column"
+	printf "Column val: %s\n" "$column"
 	if [ -z "$column" ]; then
 	    msg=$(printf "get_column_values(): No value found for column %s\n" "$column_count")
 	    log_msg -e --msg="$msg"
