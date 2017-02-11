@@ -293,6 +293,7 @@ update_ppa_soft_array(){
 
 #this function prints the ppa_soft_array
 print_ppa_soft_array() {
+    pritnf "adsadasdasdHERE\n"
     local index=0
     local msg=
     local array_content=
