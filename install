@@ -12,7 +12,7 @@ DEFAULT_TYPE=b
 #default files and directory
 PPALIST_FILE="ibnr-conf/ppa_list.conf"
 INSTALL_SCRIPTS_DIR="install_scripts"
-INSTALLED_PPA_LOG=installed_ppa.conf
+INSTALLED_PPA_LOG=success_ppa.conf
 FAILED_PPA_LOG=failed_ppa.conf
 
 # The line content after comments are removed
@@ -241,7 +241,13 @@ create_log() {
 
 	if [ "$local_success" -eq 1 ]; then
 	    msg="$(printf "%-*s %-*s %-*s %-*s %s %s" "$column1_length_max" "$column1_value_name_raw" "$column2_length_max" "$column2_value_progname_raw" "$column3_length_max" "$column3_value_ppa_raw" "$column4_length_max" "$column4_value_toi_raw" "$column5_value_props" "$ppa_comments")"
-	    printf "Msg is: %s\n" "$msg"
+	    #log to success file
+	    if [ "$success" -eq 1 ]; then
+		printf "Msg is: %s\n" "$msg" >> "INSTALLED_PPA_LOG"
+	    #else to the failed file
+	    else
+		printf "Msg is: %s\n" "$msg" >> "FAILED_PPA_LOG"
+	    fi
 	fi
     fi
 }
