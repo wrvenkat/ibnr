@@ -8,3 +8,6 @@
 
 #Ignore locked files by emacs
 \.\#*
+
+#ignore .gitmodules file
+\.gitmodules
