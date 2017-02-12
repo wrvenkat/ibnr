@@ -243,10 +243,10 @@ create_log() {
 	    msg="$(printf "%-*s %-*s %-*s %-*s %s %s" "$column1_length_max" "$column1_value_name_raw" "$column2_length_max" "$column2_value_progname_raw" "$column3_length_max" "$column3_value_ppa_raw" "$column4_length_max" "$column4_value_toi_raw" "$column5_value_props" "$ppa_comments")"
 	    #log to success file
 	    if [ "$success" -eq 1 ]; then
-		printf "%s\n" "$msg" >> "$INSTALLED_PPA_LOG"
+		printf "%s\n" "$msg" > "$INSTALLED_PPA_LOG"
 	    #else to the failed file
 	    else
-		printf "%s\n" "$msg" >> "$FAILED_PPA_LOG"
+		printf "%s\n" "$msg" > "$FAILED_PPA_LOG"
 	    fi
 	fi
     fi
@@ -532,7 +532,14 @@ install_soft() {
 		msg=$(printf "Installation of %s requires a script.\n" "$column2_value_progname")
 		log_msg --msg="$msg"
 		#call_install_script
-		call_script "$column2_value_progname" "$index"
+		if call_script "$column2_value_progname" "$index"; then
+		    #update the status
+		    update_ppa_soft_array "$index" 8 1
+		else
+		    #we are not storing the error message that was returned during the script call
+		    update_ppa_soft_array "$index" 8 0
+		    create_log 0 "$index"
+		fi
 	    else
 		#printf "install_ppa() processing PPA_LINE %s for index %s\n" "$column6_value_lineno" "$index"
 		soft="$column2_value_progname"
