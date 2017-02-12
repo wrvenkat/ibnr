@@ -302,6 +302,10 @@ print_ppa_soft_array() {
     local msg=
     local header=0
     local ppa_comments=
+    local props_col_len=12
+    local lineno_str="LineNo"
+    local lineno_col_len="${#lineno_str}"
+
     for index in "${!ppa_soft_array[@]}"; do
 	array_content="${ppa_soft_array[$index]}"
 	if [ -z "$array_content" ]; then
@@ -315,10 +319,10 @@ print_ppa_soft_array() {
 	fi
 	if get_column_values "$array_content"; then
 	    if [ $header -eq 0 ]; then
-		printf "%-*s %-*s %-*s %-*s %s %s %s\n" "$column1_length_max" "Name" "$column2_length_max" "ProgName" "$column3_length_max" "PPA" "$column4_length_max" "TOI" "Property LineNo Comments"
+		printf "%-*s %-*s %-*s %-*s %-*s %-*s %s\n" "$column1_length_max" "Name" "$column2_length_max" "ProgName" "$column3_length_max" "PPA" "$column4_length_max" "TOI" "$props_col_len" "Property" "$lineno_col_len" "$lineno_str" "Comments"
 		header=1
 	    fi
-	    printf "%-*s %-*s %-*s %-*s %s %s %s\n" "$column1_length_max" "$column1_value_name_raw" "$column2_length_max" "$column2_value_progname_raw" "$column3_length_max" "$column3_value_ppa_raw" "$column4_length_max" "$column4_value_toi_raw" "$column5_value_props" "$column6_value_lineno" "$ppa_comments"
+	    printf "%-*s %-*s %-*s %-*s %-*s %-*s %s\n" "$column1_length_max" "$column1_value_name_raw" "$column2_length_max" "$column2_value_progname_raw" "$column3_length_max" "$column3_value_ppa_raw" "$column4_length_max" "$column4_value_toi_raw" "$props_col_len" "$column5_value_props" "$lineno_col_len" "$column6_value_lineno" "$ppa_comments"
 	fi
     done
 }
