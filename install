@@ -368,6 +368,7 @@ add_ppa() {
 	    update_ppa_soft_array "$index" 7 1
 	    msg=$(printf "PPA \"%s\" already present in the repository." "$ppa")
 	    log_msg --msg="$msg"
+	    create_log 1 "$index"
 	    return 0
 	fi
 	#add the PPA
