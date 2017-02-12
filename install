@@ -754,64 +754,45 @@ parse_file() {
 	    local msg=
 	    local index=
 	    local comments=
-	    local acc_val=
-	    #count the number of words we obtained
+	    local curr_elem_len=0
 	    for index in "${!strict_line[@]}"; do
-		:
-		if [ "$index" -eq 5 ]; then
-		    acc_val+="$(printf "%s" "${strict_line[$index]}")"
-		else
-		    acc_val+="$(printf "%s " "${strict_line[$index]}")"
+		#printf "Line is %s\n" "${strict_line[*]}"
+		#printf "asdasdasdasd: %s\n" "${strict_line[$index]}"
+		curr_elem_len="${#strict_line[$index]}"
+		local result="$(bash_quoting_parse "${strict_line[$index]}" 2>&1)"
+		local retVal=$?
+		if [ "$retVal" -ne 0 ]; then
+		    msg=$(printf "bash_quoting_parse failed with error:%s" "$result")
+		    log_msg -e --msg="$msg"
+		    exit 1
 		fi
+		case $index in
+		    0) if [ $column1_length_max -lt $curr_elem_len ]; then
+			   column1_length_max=$curr_elem_len
+		       fi
+		       msg+=$(printf "%s " "${strict_line[$index]}");;
+		    1) if [ $column2_length_max -lt $curr_elem_len ]; then
+			   column2_length_max=$curr_elem_len
+		       fi
+		       msg+=$(printf "%s " "${strict_line[$index]}");;
+		    2) if [ $column3_length_max -lt $curr_elem_len ]; then
+			   column3_length_max=$curr_elem_len
+		       fi
+		       msg+=$(printf "%s " "${strict_line[$index]}");;
+		    3) if [ $column4_length_max -lt $curr_elem_len ]; then
+			   column4_length_max=$curr_elem_len
+		       fi
+		       msg+=$(printf "%s " "${strict_line[$index]}");;
+		    4) msg+=$(printf "%s " "${strict_line[$index]}");;
+		    5) msg+=$(printf "%s 0 0" "$strict_index")
+		       #column 5 is the comments which is saved in a separate array but indexed
+		       #with the same index number
+		       comments=$(printf "%s" "${strict_line[$index]}");;
+		    *) msg="$(printf "parse_file(): Error parsing file. Quitting. Line:%s\n" "$acc_val")"
+		       log_msg -e --msg="$msg" -l "$strict_index";
+		       exit 1;;
+		esac
 	    done
-	    #we are supposed to get exactly 6 words, and anything beyond or lesser
-	    # than that indicates incorrect file format
-	    if [ "$index" -ne 5 ]; then
-		msg="$(printf "parse_file(): Error parsing file. Quitting. Line:%s\n" "$acc_val")"
-		log_msg -e --msg="$msg" -l "$strict_index"
-		exit 1
-	    else
-		#if we did get the right number if words, we add in the rest of the column values
-		local curr_elem_len=0
-		for index in "${!strict_line[@]}"; do
-		    #printf "Line is %s\n" "${strict_line[*]}"
-		    #printf "asdasdasdasd: %s\n" "${strict_line[$index]}"
-		    curr_elem_len="${#strict_line[$index]}"
-		    local result="$(bash_quoting_parse "${strict_line[$index]}" 2>&1)"
-		    local retVal=$?
-		    if [ "$retVal" -ne 0 ]; then
-			msg=$(printf "bash_quoting_parse failed with error:%s" "$result")
-			log_msg -e --msg="$msg"
-			exit 1
-		    fi
-		    case $index in
-			0) if [ $column1_length_max -lt $curr_elem_len ]; then
-			       column1_length_max=$curr_elem_len
-			   fi
-			   msg+=$(printf "%s " "${strict_line[$index]}");;
-			1) if [ $column2_length_max -lt $curr_elem_len ]; then
-			       column2_length_max=$curr_elem_len
-			   fi
-			   msg+=$(printf "%s " "${strict_line[$index]}");;
-			2) if [ $column3_length_max -lt $curr_elem_len ]; then
-			       column3_length_max=$curr_elem_len
-			   fi
-			   msg+=$(printf "%s " "${strict_line[$index]}");;
-			3) if [ $column4_length_max -lt $curr_elem_len ]; then
-			       column4_length_max=$curr_elem_len
-			   fi
-			   msg+=$(printf "%s " "${strict_line[$index]}");;
-			4) msg+=$(printf "%s " "${strict_line[$index]}");;
-			5) msg+=$(printf "%s 0 0" "$strict_index")
-			   #column 5 is the comments which is saved in a separate array but indexed
-			   #with the same index number
-			   comments=$(printf "%s" "${strict_line[$index]}");;
-			*) msg="$(printf "parse_file(): Error parsing file. Quitting. Line:%s\n" "$acc_val")"
-			   log_msg -e --msg="$msg" -l "$strict_index";
-			   exit 1;;
-		    esac		
-		done
-	    fi
 	    #printf "Msg: %s\n" "$msg"
 	    #printf "Comments: %s\n" "$comments"
 	    #add this line only if it is of the same type as the ones provided
