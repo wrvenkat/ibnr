@@ -116,6 +116,12 @@ column5_value_props=
 column6_value_lineno=
 column7_value_ppastatus=
 column8_value_installstatus=
+
+#the raW version
+column1_value_name_raw=
+column2_value_progname_raw=
+column3_value_ppa_raw=
+column4_value_toi_raw=
 #starts from 1...8
 MAX_COLUMNS=8
 
@@ -129,16 +135,12 @@ get_column_values() {
     column6_value_lineno=
     column7_value_ppastatus=
     column8_value_installstatus=
-    local no_quoting_parse=1
+    local column_raw=
     
     local column_count=1
     if [ -z "$1" ]; then
 	log_msg --msg="get_column_values(): Incorrect or invalid arguments received"
 	return 1
-    fi
-
-    if [ -z "$2" ]; then
-	no_quoting_parse=0
     fi
 
     column_count=1
@@ -149,26 +151,27 @@ get_column_values() {
 	    return 1
 	fi
 
-	if [ "$no_quoting_parse" -ne 1 ]; then
-	    if bash_quoting_parse "$column"; then
-	       column="$quoting_parsed_string"
-	    else
-		msg=$(printf "bash_quoting_parse failed with error:%s" "${strict_line[$index]}")
-		log_msg -e --msg="$msg"
-		exit 1		
-	    fi
+	column_raw="$column"
+	if bash_quoting_parse "$column"; then
+	    column="$quoting_parsed_string"
 	else
-	    printf "Column val without quotes processing is %s\n" "$column"
+	    msg=$(printf "bash_quoting_parse failed with error:%s" "${strict_line[$index]}")
+	    log_msg -e --msg="$msg"
+	    exit 1
 	fi
 	
 	if [ $column_count -eq 1 ]; then
 	    column1_value_name="$column"
+	    column1_value_name_raw="$column_raw"
 	elif [ $column_count -eq 2 ]; then
-	    column2_value_progname="$column"	
+	    column2_value_progname="$column"
+	    column2_value_progname_raw="$column_raw"
 	elif [ $column_count -eq 3 ]; then
 	    column3_value_ppa="$column"
+	    column3_value_ppa_raw="$column_raw"
 	elif [ $column_count -eq 4 ]; then
 	    column4_value_toi="$column"
+	    column4_value_toi_raw="$column_raw"
 	elif [ $column_count -eq 5 ]; then
 	    column5_value_props="$column"
 	elif [ $column_count -eq 6 ]; then
@@ -221,7 +224,7 @@ create_log() {
 	return 0
     fi
     
-    if get_column_values "$array_content" 1; then
+    if get_column_values "$array_content"; then
 	if [ "$INSTALL_FLG" -eq 1 ]; then
 	    if [ "$column8_value_installstatus" -eq "$success" ] || [ "$success" -eq 255 ]; then
 		local_success=1
@@ -237,7 +240,7 @@ create_log() {
 	fi
 
 	if [ "$local_success" -eq 1 ]; then
-	    msg="$(printf "%-*s %-*s %-*s %-*s %s %s" "$column1_length_max" "$column1_value_name" "$column2_length_max" "$column2_value_progname" "$column3_length_max" "$column3_value_ppa" "$column4_length_max" "$column4_value_toi" "$column5_value_props" "$ppa_comments")"
+	    msg="$(printf "%-*s %-*s %-*s %-*s %s %s" "$column1_length_max" "$column1_value_name_raw" "$column2_length_max" "$column2_value_progname_raw" "$column3_length_max" "$column3_value_ppa_raw" "$column4_length_max" "$column4_value_toi_raw" "$column5_value_props" "$ppa_comments")"
 	    printf "Msg is: %s\n" "$msg"
 	fi
     fi
@@ -265,13 +268,13 @@ update_ppa_soft_array(){
     value="$3"
 
     if [ $column_no -eq 1 ]; then
-	column1_value_name="$value"
+	column1_value_name_raw="$value"
     elif [ $column_no -eq 2 ]; then
-	column2_value_progname="$value"	
+	column2_value_progname_raw="$value"
     elif [ $column_no -eq 3 ]; then
-	column3_value_ppa="$value"
+	column3_value_ppa_raw="$value"
     elif [ $column_no -eq 4 ]; then
-	column4_value_toi="$value"
+	column4_value_toi_raw="$value"
     elif [ $column_no -eq 5 ]; then
 	column5_value_props="$value"
     elif [ $column_no -eq 6 ]; then
@@ -285,9 +288,8 @@ update_ppa_soft_array(){
 	return 1
     fi
     
-    msg=$(printf "%s %s %s %s %s %s %s %s" "$column1_value_name" "$column2_value_progname" "$column3_value_ppa" "$column4_value_toi" "$column5_value_props" "$column6_value_lineno" "$column7_value_ppastatus" "$column8_value_installstatus")
+    msg=$(printf "%s %s %s %s %s %s %s %s" "$column1_value_name_raw" "$column2_value_progname_raw" "$column3_value_ppa_raw" "$column4_value_toi_raw" "$column5_value_props" "$column6_value_lineno" "$column7_value_ppastatus" "$column8_value_installstatus")
     ppa_soft_array["$index"]="$msg"
-
     return 0
 }
 
@@ -311,15 +313,15 @@ print_ppa_soft_array() {
 	if [ "$ppa_comments" != "!" ]; then
 	    ppa_comments="MSG"
 	fi
-	if get_column_values "$array_content" 1; then
+	if get_column_values "$array_content"; then
 	    if [ $header -eq 0 ]; then
 		msg+="$(printf "Name ProgName PPA TOI Property LineNo Comments")\n"
 		header=1
 	    fi
-	    msg+="$(printf "%s %s %s %s %s %s %s\n" "$column1_value_name" "$column2_value_progname" "$column3_value_ppa" "$column4_value_toi" "$column5_value_props" "$column6_value_lineno" "$ppa_comments")\n"
+	    msg+="$(printf "%-*s %-*s %-*s %-*s %s %s" "$column1_length_max" "$column1_value_name_raw" "$column2_length_max" "$column2_value_progname_raw" "$column3_length_max" "$column3_value_ppa_raw" "$column4_length_max" "$column4_value_toi_raw" "$column5_value_props" "$ppa_comments")"
 	fi
     done
-    printf "$msg" | column -t
+    printf "%s\n" "$msg"
 }
 
 #this function adds the given ppa into the repository
@@ -601,7 +603,9 @@ install_softs() {
     	    
 	    #if the next line is a dependency for the current line, then
 	    #we install that software recursively
-	    if [ -n "$next_ppa_line" ] && get_column_values "$next_ppa_line" && get_props_values "$column5_value_props" "$column6_value_lineno" && [ "$props2_value_dependency" -eq 1 ]; then
+	    if [ -n "$next_ppa_line" ] && get_column_values "$next_ppa_line" \
+		   && get_props_values "$column5_value_props" "$column6_value_lineno" \
+		   && [ "$props2_value_dependency" -eq 1 ]; then
 		msg=$(printf "Processing dependency program %s\n" "$column1_value_name")
 		log_msg --msg="$msg"
 		
