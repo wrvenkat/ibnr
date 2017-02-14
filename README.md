@@ -54,7 +54,7 @@ A set of configurable and extensible shell scripts for Ubuntu to batch add softw
 
 ## Contributing
 
-Any type of contribution is welcome! :) The dev branch holds the unstable, under development code with the test branch which holds the test cases as a submodule. The master branch holds the latest stable.  
+Any type of contribution is welcome! :) The dev branch holds the unstable, under development code with the test branch as a submodule. The test branch holds some test cases. The master branch holds the latest stable.  
 For contributions to build scripts and ppa_list.conf, please see [install_scripts](https://github.com/wrvenkat/install_scripts) and [ibnr-conf](https://github.com/wrvenkat/ibnr-conf).
 
 ## LICENSE
