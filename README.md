@@ -1,5 +1,5 @@
 # ibnr
-A set of configurable and extensible shell scripts for Ubuntu to batch add software PPAs, install softwares and backup/restore their corresponding dotfiles.
+A set of configurable and extensible shell scripts for Ubuntu to batch add software PPAs, bacth install softwares and backup/restore their corresponding dotfiles.
 
 ## Purpose
   Whenever you freshly install Ubuntu, in either a VM or on a physical machine, you often require the latest versions of your favourite softwares also be installed so that you can just start using it conveniently. However, Ubuntu only ships their installation images with a particular version of these softwares in their offical respository. You may get the latest version during updates after the installation.
