@@ -2,7 +2,7 @@
 A set of configurable and extensible shell scripts for Ubuntu to batch add software PPAs, bacth install softwares and backup/restore their corresponding dotfiles.
 
 ## Purpose
-  Whenever you freshly install Ubuntu, in either a VM or on a physical machine, you often require the latest versions of your favourite softwares also be installed so that you can just start using it conveniently. However, Ubuntu only ships their installation images with a particular version of these softwares in their offical respository. You may get the latest version during updates after the installation.
+  Whenever you freshly install Ubuntu, you often require the latest versions of your favourite softwares also be installed so that you can just start using it conveniently. However, Ubuntu only ships their installation images with a particular version of these softwares in their offical respository. You may get the latest version during updates after the installation.
 
   PPAs are how most softwares are distributed and how most users of Ubuntu install them. Sotware versions available over these PPAs may or may not be stable not having gone through the validation process for the main/official repository, form the primary source for the best version available besides the official channel. It is also the but it the most convenient way of installing them and recieving updates.
   
