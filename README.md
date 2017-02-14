@@ -32,24 +32,27 @@ A set of configurable and extensible shell scripts for Ubuntu to batch add softw
 `--file=ppa-list-file-path`&nbsp;`- the config file to be used instead of the default one.`  
 `--list`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`- display the parsed contents of the config file.`  
 `--add`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`- add the PPA for the softwares.`  
-`--install`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`- install the software present in the config file.`  
-`--type=[b,d,d1,d2...]`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`- used in conjuction with --list and --install options, a value to this option indicates the type of software to be displayed or installed. Values can be comma separated. The default value is b for the base level. (b - basic/core requirements). Other examples would be, d - desktop, dev - development, etc.`
+`--install`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`- install the softwares present in the config file.`  
+`--type=[b,d,d1,d2...]`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`- used in conjuction with --list and --install options, a value to this option indicates the type of software to be displayed or installed. Values are comma separated. The default value is b for the base level. (b - basic/core requirements). Other examples would be, d - desktop, dev - development, g- games etc.`
 
 #### Example
   
   1. Get a stable copy of the project:  
-  `git clone --recursive https://github.com/wrvenkat/ibnr.git && git checkout stable`
-  2. Navigate to ibnr-conf directory and get the config file for your Ubuntu version:  
-  `cd ibnr-conf; git checkout <your_ubuntu_version>`  
-  Example: `cd ibnr-conf; git checkout 16.04`
-  3. Navigate back to the project dir and run the tool to list the config file, add the PPAs and install the software:  
-  `cd ..; ./install --list --add --install`
-  4. Optionally, run the tool again with one of the output file to attempt to install failed ones:  
+  `git clone https://github.com/wrvenkat/ibnr.git`
+  2. Get a copy of the config file for your Ubuntu version or you can use your own version:  
+  `git clone https://github.com/wrvenkat/ibnr-conf.git && checkout <your_ubuntu_version>`  
+   Example: `git clone https://github.com/wrvenkat/ibnr-conf.git && checkout 16.04`  
+  3. Get a copy of the install scripts for your Ubunut version:  
+  `git clone https://github.com/wrvenkat/install_scripts.git && git checkout <your_ubuntu_version>`  
+   Example: `git clone https://github.com/wrvenkat/install_scripts.git && git checkout 16.04`  
+  4. Run the tool to list the config file, add the PPAs and install the software:  
+  `./install --list --add --install`  
+  5. Optionally, run the tool again with one of the output file to attempt to install failed ones:  
   `./install --list --install --file=failed_ppa_list.conf`
 
 ## Contributing
 
-Contributions are welcome. Please see the README.md for the submodules for information on contributing.
+Any type of contribution is welcome! :) The dev branch holds the unstable under development code. The master branch holds the latest stable.
 
 ## LICENSE
 
