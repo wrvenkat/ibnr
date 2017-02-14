@@ -42,7 +42,7 @@ A set of configurable and extensible shell scripts for Ubuntu to batch add softw
   2. Get a copy of the config file for your Ubuntu version or you can use your own version:  
   `git clone https://github.com/wrvenkat/ibnr-conf.git && checkout <your_ubuntu_version>`  
    Example: `git clone https://github.com/wrvenkat/ibnr-conf.git && checkout 16.04`  
-  3. Get a copy of the install scripts for your Ubunut version:  
+  3. Get a copy of the install scripts for your Ubuntu version:  
   `git clone https://github.com/wrvenkat/install_scripts.git && git checkout <your_ubuntu_version>`  
    Example: `git clone https://github.com/wrvenkat/install_scripts.git && git checkout 16.04`  
   4. Run the tool to list the config file, add the PPAs and install the software:  
@@ -52,7 +52,8 @@ A set of configurable and extensible shell scripts for Ubuntu to batch add softw
 
 ## Contributing
 
-Any type of contribution is welcome! :) The dev branch holds the unstable under development code. The master branch holds the latest stable.
+Any type of contribution is welcome! :) The dev branch holds the unstable, under development code. The master branch holds the latest stable.
+For contributions to build scripts and ppa_list.conf, please see [install_scripts](https://github.com/wrvenkat/install_scripts) and [ibnr-conf](https://github.com/wrvenkat/ibnr-conf).
 
 ## LICENSE
 
