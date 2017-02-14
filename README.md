@@ -39,15 +39,17 @@ A set of configurable and extensible shell scripts for Ubuntu to batch add softw
   
   1. Get a stable copy of the project:  
   `git clone https://github.com/wrvenkat/ibnr.git`
-  2. Get a copy of the config file for your Ubuntu version or you can use your own version:  
+  2. Get a copy of the config file for your Ubuntu version or you can use your own file:  
   `git clone https://github.com/wrvenkat/ibnr-conf.git && checkout <your_ubuntu_version>`  
-   Example: `git clone https://github.com/wrvenkat/ibnr-conf.git && checkout 16.04`  
+   Example: `git clone https://github.com/wrvenkat/ibnr-conf.git && git checkout 16.04`  
   3. Get a copy of the install scripts for your Ubuntu version:  
   `git clone https://github.com/wrvenkat/install_scripts.git && git checkout <your_ubuntu_version>`  
    Example: `git clone https://github.com/wrvenkat/install_scripts.git && git checkout 16.04`  
-  4. Run the tool to list the config file, add the PPAs and install the software:  
+  4. Get the stable version of [bash helper scripts](https://github.com/wrvenkat/bash_helper_scripts.git):  
+  `git clone https://github.com/wrvenkat/bash_helper_scripts.git`  
+  5. Run the tool to list the config file, add the PPAs and install the software:  
   `./install --list --add --install`  
-  5. Optionally, run the tool again with one of the output file to attempt to install failed ones:  
+  6. Optionally, run the tool again with one of the output file to attempt to install failed ones:  
   `./install --list --install --file=failed_ppa_list.conf`
 
 ## Contributing
