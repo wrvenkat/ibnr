@@ -425,7 +425,7 @@ add_ppas() {
 	    #if the next line is a dependency for the current line, then
 	    #we add that to the PPA recursively	    
 	    if [ -n "$next_ppa_line" ] && get_column_values "$next_ppa_line" && get_props_values "$column5_value_props" "$column6_value_lineno" && [ "$props2_value_dependency" -eq 1 ]; then
-		msg=$(printf "Processing dependency program \"%s\"\n" "$column1_value_name")
+		msg=$(printf "Processing PPA for dependency program \"%s\"\n" "$column1_value_name")
 		log_msg --msg="$msg"
 
 		#we then recursively get to the next line
