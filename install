@@ -431,6 +431,7 @@ add_ppas() {
 		#we then recursively get to the next line
 		add_ppas "$next_index"
 		ret_value=$?
+		printf "RetValue is %s\n" "$ret_value"
 
 		#we return the index returned by this recursive call as the return value
 		if [ $ret_value -ne 255 ]; then
