@@ -40,7 +40,7 @@ A set of configurable and extensible shell scripts for Ubuntu to batch add softw
   1. Get a stable copy of the project:  
   `git clone https://github.com/wrvenkat/ibnr.git`
   2. Get a copy of the config file for your Ubuntu version or you can use your own file:  
-  `git clone https://github.com/wrvenkat/ibnr-conf.git && checkout <your_ubuntu_version>`  
+  `git clone https://github.com/wrvenkat/ibnr-conf.git && git checkout <your_ubuntu_version>`  
    Example: `git clone https://github.com/wrvenkat/ibnr-conf.git && git checkout 16.04`  
   3. Get a copy of the install scripts for your Ubuntu version:  
   `git clone https://github.com/wrvenkat/install_scripts.git && git checkout <your_ubuntu_version>`  
