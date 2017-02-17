@@ -36,15 +36,15 @@ A set of configurable and extensible shell scripts for Ubuntu to batch add softw
 `--type=[b,d,d1,d2...]`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`- used in conjuction with --list and --install options, a value to this option indicates the type of software to be displayed or installed. Values are comma separated. The default value is b for the base level. (b - basic/core requirements). Other examples would be, d - desktop, dev - development, g- games etc.`
 
 #### Example
-  
+You can download the [bootstrap] (link) script that does the following.  
   1. Get a stable copy of the project and move to the folder:  
   `git clone https://github.com/wrvenkat/ibnr.git && cd ibnr`
   2. Get a copy of the config file for your Ubuntu version or you can use your own file:  
-  `git clone https://github.com/wrvenkat/ibnr-conf.git && git checkout <your_ubuntu_version>`  
-   Example: `git clone https://github.com/wrvenkat/ibnr-conf.git && git checkout 16.04`  
+  `git clone https://github.com/wrvenkat/ibnr-conf.git && cd ibnr-conf && git checkout <your_ubuntu_version> && cd ..`  
+   Example: `git clone https://github.com/wrvenkat/ibnr-conf.git && cd ibnr-conf && git checkout 16.04 && cd ..`  
   3. Get a copy of the install scripts for your Ubuntu version:  
-  `git clone https://github.com/wrvenkat/install_scripts.git && git checkout <your_ubuntu_version>`  
-   Example: `git clone https://github.com/wrvenkat/install_scripts.git && git checkout 16.04`  
+  `git clone https://github.com/wrvenkat/install_scripts.git && cd install_scripts && git checkout <your_ubuntu_version> && cd ..`  
+   Example: `git clone https://github.com/wrvenkat/install_scripts.git && cd install_scripts && git checkout 16.04 && cd ..`  
   4. Get the stable version of [bash helper scripts](https://github.com/wrvenkat/bash_helper_scripts.git):  
   `git clone https://github.com/wrvenkat/bash_helper_scripts.git`  
   5. Run the tool to list the config file, add the PPAs and install the software:  
