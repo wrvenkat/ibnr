@@ -499,13 +499,13 @@ call_script(){
     local result=$(bash "$script_path" 2>&1)
     retVal=$?
     if [ "$retVal" -eq 0 ]; then
-	update_ppa_soft_array "$index" 8 1
+	#update_ppa_soft_array "$index" 8 1
 	create_log 1 "$index"
     else
 	msg="$(printf "install_soft(): The following error occurred when calling script for software \"%s\": \n%s\n" "$soft" "$result")"
 	log_msg -e --msg="$msg"
 	#we are not storing the error message that was returned during the script call
-	update_ppa_soft_array "$index" 8 0
+	#update_ppa_soft_array "$index" 8 0
 	create_log 0 "$index"
 	return 1	
     fi
@@ -537,11 +537,11 @@ install_soft() {
 		#call_install_script
 		if call_script "$column2_value_progname" "$index"; then
 		    #update the status
-		    update_ppa_soft_array "$index" 8 1
+		    #update_ppa_soft_array "$index" 8 1
 		    create_log 1 "$index"
 		else
 		    #we are not storing the error message that was returned during the script call
-		    update_ppa_soft_array "$index" 8 0
+		    #update_ppa_soft_array "$index" 8 0
 		    create_log 0 "$index"
 		    return 1
 		fi
@@ -580,13 +580,13 @@ install_soft() {
 		    #post installation processing
 		    if [ "$retVal" -eq 0 ]; then
 			#update the status
-			update_ppa_soft_array "$index" 8 1
+			#update_ppa_soft_array "$index" 8 1
 			create_log 1 "$index"
 		    else
 			msg=$(printf "Following error occurred when trying to install software \"%s\": \n%s\n" "$soft" "$result")
 			log_msg -e --msg="$msg" --line="$2"
 			#we are not storing the error message that was returned during the script call
-			update_ppa_soft_array "$index" 8 0
+			#update_ppa_soft_array "$index" 8 0
 			create_log 0 "$index"
 		    fi
 		fi
@@ -642,7 +642,7 @@ install_softs() {
 		if [ $ret_value -ne 255 ]; then
 		    next_index="$ret_value"
 		else
-		    update_ppa_soft_array "$index" 8 0
+		    #update_ppa_soft_array "$index" 8 0
 		    create_log 0 "$index"
 		    return -1
 		fi
