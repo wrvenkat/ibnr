@@ -384,7 +384,7 @@ add_ppa() {
 	    create_log 1 "$index"
 	else
 	    update_ppa_soft_array "$index" 7 0
-	    msg=$(printf "The following error occurred when adding the PPA \"%s\":\n%s\n" "$ppa" "$result")
+	    msg=$(printf "Error when adding PPA \"%s\":\n%s\n" "$ppa" "$result")
 	    log_msg -e --msg="$msg"
 	    create_log 0 "$index"
 	    return -1
