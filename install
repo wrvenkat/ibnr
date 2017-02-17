@@ -425,7 +425,7 @@ add_ppas() {
 	    #if the next line is a dependency for the current line, then
 	    #we add that to the PPA recursively	    
 	    if [ -n "$next_ppa_line" ] && get_column_values "$next_ppa_line" && get_props_values "$column5_value_props" "$column6_value_lineno" && [ "$props2_value_dependency" -eq 1 ]; then
-		msg=$(printf "Processing dependency program %s\n" "$column1_value_name")
+		msg=$(printf "Processing dependency program \"%s\"\n" "$column1_value_name")
 		log_msg --msg="$msg"
 
 		#we then recursively get to the next line
@@ -436,7 +436,12 @@ add_ppas() {
 		if [ $ret_value -ne 255 ]; then
 		    next_index="$ret_value"
 		else
-		    return -1
+		    if get_column_values "$ppa_line" && [ "$column3_value_ppa" != '!' ]; then
+			msg=$(printf "Skipping adding PPA for \"%s\" as 1 or more dependency PPA failed to be added." "$column1_value_name")
+			update_ppa_soft_array "$index" 7 0
+			create_log 0 "$index"
+			return -1
+		    fi
 		fi
 	    fi
 
@@ -532,7 +537,7 @@ install_soft() {
 	if [ -n "$column2_value_progname" ] && [ "$column2_value_progname" != "!" ]; then
 	    #if any of the softwares require a script based installation
 	    if get_props_values "$column5_value_props" "$column6_value_lineno" && [ "$props1_value_script" -eq 1 ]; then
-		msg=$(printf "Installation of %s requires a script.\n" "$column2_value_progname")
+		msg=$(printf "Installation of \"%s\" requires a script.\n" "$column2_value_progname")
 		log_msg --msg="$msg"
 		#call_install_script
 		if call_script "$column2_value_progname" "$index"; then
@@ -636,13 +641,16 @@ install_softs() {
 		#we then recursively get to the next line
 		install_softs "$next_index"
 		ret_value=$?
-		printf "Retrun value is %s\n" "$ret_value"
+		#printf "Retrun value is %s\n" "$ret_value"
 
 		#we return the index returned by this recursive call as the return value
 		if [ $ret_value -ne 255 ]; then
 		    next_index="$ret_value"
 		else
 		    #update_ppa_soft_array "$index" 8 0
+		    get_column_values "$ppa_line"
+		    msg=$(printf "Skipping installation of \"%s\" as 1 or more dependencies failed to install." "$column1_value_name")
+		    log_msg -e --msg="$msg"
 		    create_log 0 "$index"
 		    return -1
 		fi
