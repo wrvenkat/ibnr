@@ -437,12 +437,11 @@ add_ppas() {
 		if [ $ret_value -ne 255 ]; then
 		    next_index="$ret_value"
 		else
-		    if get_column_values "$ppa_line" && [ "$column3_value_ppa" != '!' ]; then
-			msg=$(printf "Skipping adding PPA for \"%s\" as 1 or more dependency PPA failed to be added." "$column1_value_name")
-			update_ppa_soft_array "$index" 7 0
-			create_log 0 "$index"
-			return -1
-		    fi
+		    get_column_values "$ppa_line"
+		    msg=$(printf "Skipping processing entry for \"%s\" as 1 or more dependency entry failed to be processed." "$column1_value_name")
+		    update_ppa_soft_array "$index" 7 0
+		    create_log 0 "$index"
+		    return -1
 		fi
 	    fi
 
