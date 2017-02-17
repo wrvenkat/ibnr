@@ -384,10 +384,10 @@ add_ppa() {
 	    create_log 1 "$index"
 	else
 	    update_ppa_soft_array "$index" 7 0
-	    msg=$(printf "Error when adding PPA \"%s\":\n%s\n" "$ppa" "$result")
+	    msg=$(printf "Error adding PPA \"%s\": %s\n" "$ppa" "$result")
 	    log_msg -e --msg="$msg"
 	    create_log 0 "$index"
-	    return -1
+	    return 1
 	fi
 	return 0
     else
@@ -635,7 +635,7 @@ install_softs() {
 	    if [ -n "$next_ppa_line" ] && get_column_values "$next_ppa_line" \
 		   && get_props_values "$column5_value_props" "$column6_value_lineno" \
 		   && [ "$props2_value_dependency" -eq 1 ]; then
-		msg=$(printf "Processing dependency program %s\n" "$column1_value_name")
+		msg=$(printf "Processing dependency program \"%s\"\n" "$column1_value_name")
 		log_msg --msg="$msg"
 		
 		#we then recursively get to the next line
@@ -685,7 +685,7 @@ install_softs() {
 
 #this function calls other function that adds the PPA
 add_all_ppa() {
-    log_msg --msg="Adding to repository...."
+    log_msg --msg="Adding PPAs to repository...."
     #call the add_ppas function
     add_ppas ""
     local ret_value=$?
