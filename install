@@ -543,6 +543,7 @@ install_soft() {
 		    #we are not storing the error message that was returned during the script call
 		    update_ppa_soft_array "$index" 8 0
 		    create_log 0 "$index"
+		    return 1
 		fi
 	    else
 		#printf "install_ppa() processing PPA_LINE %s for index %s\n" "$column6_value_lineno" "$index"
@@ -621,6 +622,8 @@ install_softs() {
 	    #parse the properties column and get the values
 	    next_index=$((index+1))
 	    local next_ppa_line="${ppa_soft_array[$next_index]}"
+	    local dependency_flg=0
+	    local dependency_success=1
     	    
 	    #if the next line is a dependency for the current line, then
 	    #we install that software recursively
@@ -633,11 +636,14 @@ install_softs() {
 		#we then recursively get to the next line
 		install_softs "$next_index"
 		ret_value=$?
+		printf "Retrun value is %s\n" "$ret_value"
 
 		#we return the index returned by this recursive call as the return value
 		if [ $ret_value -ne 255 ]; then
 		    next_index="$ret_value"
 		else
+		    update_ppa_soft_array "$index" 8 0
+		    create_log 0 "$index"
 		    return -1
 		fi
 	    fi
@@ -725,7 +731,7 @@ install_all_softs(){
     
     #install the softwares
     if ! install_softs; then
-	log_msg -e --msg="install_all_softs(): Something went wrong installing the softwares."
+	#log_msg -e --msg="install_all_softs(): Something went wrong installing the softwares."
 	return 1
     else
 	#remove any remnants leftover dependencies that are no longer needed
