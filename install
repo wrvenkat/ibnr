@@ -449,11 +449,9 @@ add_ppas() {
 	while [ "$curr_index" -gt "$index" ]; do
 	    curr_ppa_line="${ppa_soft_array[$curr_index]}"
 	    get_column_values "$curr_ppa_line"
-	    msg="$(printf "Processing dependency PPA \"%s\"." "$column3_value_ppa")"
-	    log_msg --msg="$msg"
 	    if [ "$ret_val" -ne 0 ]; then
 		msg="$(printf "Skipping dependency PPA \"%s\" as one or more dependency PPAs failed." "$column3_value_ppa")"
-		log_msg --msg="$msg"
+		log_msg -e --msg="$msg"
 		update_ppa_soft_array "$curr_index" 7 0
 	    else
 		if add_ppa "$curr_index"; then
@@ -471,7 +469,7 @@ add_ppas() {
 	get_column_values "$ppa_line"
 	if [ "$ret_val" -ne 0 ]; then
 	    msg="$(printf "Skipping PPA \"%s\" as one or more dependency PPAs failed." "$column3_value_ppa")"
-	    log_msg --msg="$msg"
+	    log_msg -e --msg="$msg"
 	    update_ppa_soft_array "$index" 7 0
 	else
 	    if add_ppa "$index"; then
