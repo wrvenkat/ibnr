@@ -203,7 +203,7 @@ create_log() {
     local msg=
     local array_content=
     local msg=
-    local success=
+    local success=0
     local local_success=0
     local ppa_comments=
     local ppa_or_install=-1
@@ -231,6 +231,8 @@ create_log() {
     if [ -z "$array_content" ]; then
 	return 0
     fi
+
+    printf "Success is %s: Install flg is %s ppaorinstall is %s\n" "$success" "$INSTALL_FLG" "$ppa_or_install"
     
     if get_column_values "$array_content"; then
 	if [ "$ppa_or_install" -eq 1 ]; then
