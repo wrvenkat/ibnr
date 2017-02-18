@@ -194,9 +194,10 @@ get_column_values() {
 
 #this function prints the ppa_soft_array element for unsuccessful PPA addition and/or unsuccessful
 #installation in the original file format
-# takes two arguments
+# takes three arguments
 # 1 - 0 for failure only and 1 for successful installation only
 # 2 - the index for the ppa_soft_array
+# 3 - 0 to check PPA status and 1 to check install status
 create_log() {
     local index=0
     local msg=
@@ -205,6 +206,7 @@ create_log() {
     local success=
     local local_success=0
     local ppa_comments=
+    local ppa_or_install=-1
 
     if [ -n "$1" ]; then
 	success="$1"
@@ -217,6 +219,12 @@ create_log() {
     else
 	return 0
     fi
+
+    if [ -n "$3" ]; then
+	ppa_or_install=$3
+    else
+	return 0
+    fi
     
     array_content="${ppa_soft_array[$index]}"
     ppa_comments="${ppa_soft_array_msg[$index]}"
@@ -225,7 +233,7 @@ create_log() {
     fi
     
     if get_column_values "$array_content"; then
-	if [ "$INSTALL_FLG" -eq 1 ]; then
+	if [ "$ppa_or_install" -eq 1 ]; then
 	    if [ "$column8_value_installstatus" -eq "$success" ]; then
 		local_success=1
 	    else
@@ -238,8 +246,7 @@ create_log() {
 		local_success=0
 	    fi
 	fi
-
-#	local_success=1
+	
 	if [ "$local_success" -eq 1 ]; then
 	    msg="$(printf "%-*s %-*s %-*s %-*s %s %s" "$column1_length_max" "$column1_value_name_raw" "$column2_length_max" "$column2_value_progname_raw" "$column3_length_max" "$column3_value_ppa_raw" "$column4_length_max" "$column4_value_toi_raw" "$column5_value_props" "$ppa_comments")"
 	    #log to success file
@@ -482,8 +489,8 @@ add_ppas() {
 	#log the status
 	curr_index="$index"
 	while [ "$curr_index" -le "$dependency_index" ]; do
-	    create_log 0 "$curr_index"
-	    create_log 1 "$curr_index"
+	    create_log 0 "$curr_index" 0
+	    create_log 1 "$curr_index" 0
 	    ((curr_index+=1))
 	done
 
@@ -686,8 +693,8 @@ install_softs() {
 	#log the statuses
 	curr_index="$index"
 	while [ "$curr_index" -le "$dependency_index" ]; do
-	    create_log 0 "$curr_index"
-	    create_log 1 "$curr_index"
+	    create_log 0 "$curr_index" 1
+	    create_log 1 "$curr_index" 1
 	    ((curr_index+=1))
 	done
 
