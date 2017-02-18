@@ -505,6 +505,7 @@ call_script(){
     log_msg --msg="$msg"
     local result=$(bash "$script_path" 2>&1)
     retVal=$?
+    printf "retVal is %s\n" "$retVal"
     if [ "$retVal" -eq 0 ]; then
 	#update_ppa_soft_array "$index" 8 1
 	create_log 1 "$index"
