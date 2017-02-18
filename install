@@ -567,7 +567,7 @@ install_soft() {
     index="$1"
     #printf "Processing PPA %s at line %s\n" "$1"
     if get_column_values "${ppa_soft_array[$index]}"; then
-	if [ -n "$column2_value_progname" ]; then
+	if [ -n "$column2_value_progname" ] && [ "$column2_value_progname" != '!' ]; then
 	    #if any of the softwares require a script based installation
 	    if get_props_values "$column5_value_props" "$column6_value_lineno" && [ "$props1_value_script" -eq 1 ]; then
 		#call_install_script
