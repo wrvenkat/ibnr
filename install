@@ -19,7 +19,7 @@ FAILED_PPA_LOG=failed_ppa.conf
 xstr=
 #this array stores each line in the ppa_list_file as populated by the create_soft_array function
 declare -a ppa_soft_array
-ppa_soft_array_count=0
+ppa_soft_array_count=-1
 #this array maintains the comments/messages specified in each entry
 declare -a ppa_soft_array_msg
 declare -A TYPE_ARGS
@@ -364,14 +364,15 @@ add_ppa() {
 	    ((index1+=1))
 	done
 	IFS="$orig_IFS"
-	#add the ppa to the repository if it is not present already
+	
+	#check if it is not present already
 	if (grep -q "$ppa_url" /etc/apt/*.list /etc/apt/sources.list.d/* >> /dev/null 2>&1); then
 	    update_ppa_soft_array "$index" 7 1
 	    msg=$(printf "PPA \"%s\" already present in the repository." "$ppa")
 	    log_msg --msg="$msg"
-	    create_log 1 "$index"
 	    return 0
 	fi
+	
 	#add the PPA
 	msg=$(printf "Adding PPA \"%s\" to the repository..." "$ppa")
 	log_msg --msg="$msg"
@@ -379,15 +380,9 @@ add_ppa() {
 	local retVal=
 	result=$(sudo add-apt-repository -y "$ppa" 2>&1)
 	retVal=$?
-	if [ "$retVal" -eq 0 ]; then
-	    #update the status
-	    update_ppa_soft_array "$index" 7 1
-	    create_log 1 "$index"
-	else
-	    update_ppa_soft_array "$index" 7 0
+	if [ "$retVal" -ne 0 ]; then
 	    msg=$(printf "Error adding PPA \"%s\": %s\n" "$ppa" "$result")
 	    log_msg -e --msg="$msg"
-	    create_log 0 "$index"
 	    return 1
 	fi
 	return 0
@@ -409,68 +404,95 @@ add_ppas() {
 
     local index=0
     local next_index=0
-    local msg=
+    local run_once=0
     local ppa_line=
-    local ret_value=-1
+    local next_ppa_line=
+    local msg=
+    local ret_val=-1
+    local result=
+    local dependency_index=
+    local dependency_ppa_line=
+    local dependency_flg=0
 
-    if [ -n "$1" ]; then
-	index="$1"
+    while [ $index -le "$ppa_soft_array_count" ]; do
+	if [ "$run_once" -eq 1 ]; then
+	    log_msg --msg="Adding PPAs to repository...."
+	    ((run_once+=1))
+	fi
+	
 	ppa_line="${ppa_soft_array[$index]}"
-	#printf "Processing array line %s with value %s\n" "$index" "$ppa_line"
-	if [ -n "$ppa_line" ]; then
-	    #peek into the next line of the column and
-	    #parse the properties column and get the values
-	    next_index=$((index+1))
-	    local next_ppa_line="${ppa_soft_array[$next_index]}"
-    	    
-	    #if the next line is a dependency for the current line, then
-	    #we add that to the PPA recursively	    
-	    if [ -n "$next_ppa_line" ] && get_column_values "$next_ppa_line" && get_props_values "$column5_value_props" "$column6_value_lineno" && [ "$props2_value_dependency" -eq 1 ]; then
-		msg=$(printf "Processing PPA for dependency program \"%s\"\n" "$column1_value_name")
+	dependency_flg=0
+	if [ -z "$ppa_line" ]; then
+	    continue
+	fi
+	next_index=$((index+1))
+
+	#peek into the next entry and see if it is a dependency
+	#get to the last dependency
+	dependency_index=$((index+1))
+	dependency_ppa_line="${ppa_soft_array[$next_index]}""$next_ppa_line"
+	while [ "$next_index" -lt "$ppa_soft_array_count" ] \
+		  && [ -n "$dependency_ppa_line" ] \
+		  && get_column_values "$dependency_ppa_line" \
+		  && get_props_values "$column5_value_props" "$column6_value_lineno" \
+		  && [ "$props2_value_dependency" -eq 1 ]; do
+	    ((dependency_index+=1))
+	    dependency_ppa_line="${ppa_soft_array[$dependency_index]}"
+	done
+	((dependency_index-=1))
+
+	#process the dependencies starting from the last dependency
+	local curr_index=
+	local curr_ppa_line=
+	ret_val=0
+	curr_index="$dependency_index"
+	while [ "$curr_index" -gt "$index" ]; do
+	    curr_ppa_line="${ppa_soft_array[$curr_index]}"
+	    get_column_values "$curr_ppa_line"
+	    msg="$(printf "Processing dependency PPA \"%s\"." "$column3_value_ppa")"
+	    log_msg --msg="$msg"
+	    if [ "$ret_val" -ne 0 ]; then
+		msg="$(printf "Skipping dependency PPA \"%s\" as one or more dependency PPAs failed." "$column3_value_ppa")"
 		log_msg --msg="$msg"
-
-		#we then recursively get to the next line
-		add_ppas "$next_index"
-		ret_value=$?
-		#printf "RetValue is %s\n" "$ret_value"
-
-		#we return the index returned by this recursive call as the return value
-		if [ $ret_value -ne 255 ]; then
-		    next_index="$ret_value"
+		update_ppa_soft_array "$curr_index" 7 0
+	    else
+		if add_ppa "$curr_index"; then
+		    ret_val=0
+		    update_ppa_soft_array "$curr_index" 7 1
 		else
-		    get_column_values "$ppa_line"
-		    msg=$(printf "Skipping processing entry for \"%s\" as one or more dependencies failed to be processed." "$column1_value_name")
-		    log_msg -e --msg="$msg"
-		    update_ppa_soft_array "$index" 7 0
-		    create_log 0 "$index"
-		    return -1
+		    ret_val=1
+		    update_ppa_soft_array "$curr_index" 7 0
 		fi
 	    fi
-
-	    #add the current line
-	    if add_ppa "$index"; then
-		return "$next_index"
-	    else
-		return -1
-	    fi
-	else
-	    msg=$(printf "add_ppas(): Encountered error when retrieving item no %s from ppa_soft_array" "$index")
-	    log_msg -e --msg="$msg"
-	    return -1
-	fi
-    else
-	index=0
-	while [ "$index" -lt "$ppa_soft_array_count" ]; do
-	    add_ppas "$index"
-	    ret_value=$?
-	    #printf "RetVal is %s\n" "$ret_value"
-	    if [ "$ret_value" -ne 255 ]; then
-		index="$ret_value"
-	    else
-		return -1
-	    fi
+	    ((curr_index-=1))
 	done
-    fi
+
+	#install the actual PPA line	
+	get_column_values "$ppa_line"
+	if [ "$ret_val" -ne 0 ]; then
+	    msg="$(printf "Skipping PPA \"%s\" as one or more dependency PPAs failed." "$column3_value_ppa")"
+	    log_msg --msg="$msg"
+	    update_ppa_soft_array "$index" 7 0
+	else
+	    if add_ppa "$index"; then
+		update_ppa_soft_array "$index" 7 1
+	    else
+		update_ppa_soft_array "$index" 7 0
+	    fi
+	fi
+
+	#log the status
+	curr_index="$index"
+	while [ "$curr_index" le "$dependency_index" ]; do
+	    create_log 0 "$curr_index"
+	    ((curr_index+=1))
+	done
+
+	#set the next index
+	index=$((dependency_index+=1))
+    done
+
+    return 0
 }
 
 
@@ -671,20 +693,6 @@ install_softs() {
     return 0
 }
 
-#this function calls other function that adds the PPA
-add_all_ppa() {
-    log_msg --msg="Adding PPAs to repository...."
-    #call the add_ppas function
-    add_ppas ""
-    local ret_value=$?
-    if [ $ret_value -ne 255 ]; then
-       return "$ret_value"
-    else
-	return 1
-    fi
-}
-
-
 #bootstrap function to installing the softwares
 #this function updates the repository, installs any updates and then
 #installs the individual softwares from the ppa_soft_array
@@ -803,10 +811,10 @@ parse_file() {
 		export TYPE_ARGS
 		#we check the condition in a sub-shell because
 		#otherwise it'd interfere with our strict_read
-		if (is_same_type "$column4_value_toi"); then
+		if (is_same_type "$column4_value_toi"); then		    
+		    ((ppa_soft_array_count+=1))
 		    ppa_soft_array[$ppa_soft_array_count]="$msg"
 		    ppa_soft_array_msg[$ppa_soft_array_count]="$comments"
-		    ((ppa_soft_array_count+=1))
 		fi
 	    fi
 	done
@@ -843,7 +851,7 @@ main() {
     #add PPAS
     if [ "$ADD_FLG" -eq 1 ];then
 	#add the PPAs
-	if ! add_all_ppa; then
+	if ! add_ppas; then
 	    return 1;
 	fi
     fi
