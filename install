@@ -483,6 +483,7 @@ add_ppas() {
 	curr_index="$index"
 	while [ "$curr_index" -le "$dependency_index" ]; do
 	    create_log 0 "$curr_index"
+	    create_log 1 "$curr_index"
 	    ((curr_index+=1))
 	done
 
