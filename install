@@ -501,19 +501,14 @@ call_script(){
     fi
 
     local retVal=0
-    msg=$(printf "call_script(): calling \"bash %s\"\n" "$script_path")
+    msg=$(printf "Running install script for \"bash %s\"\n" "$script_path")
     log_msg --msg="$msg"
     local result=1
     result=$(. "$script_path" 2>&1)
     retVal=$?
-    if [ "$retVal" -eq 0 ]; then
-	#update_ppa_soft_array "$index" 8 1
-	create_log 1 "$index"
-    else
+    if [ "$retVal" -ne 0 ]; then
 	msg="$(printf "Error occurred running script for software \"%s\": %s" "$soft" "$result")"
 	log_msg -e --msg="$msg"
-	create_log 0 "$index"
-	return 1	
     fi
     return "$retVal"
 }
@@ -538,17 +533,10 @@ install_soft() {
 	if [ -n "$column2_value_progname" ] && [ "$column2_value_progname" != "!" ]; then
 	    #if any of the softwares require a script based installation
 	    if get_props_values "$column5_value_props" "$column6_value_lineno" && [ "$props1_value_script" -eq 1 ]; then
-		msg=$(printf "Installation of \"%s\" requires a script.\n" "$column2_value_progname")
-		log_msg --msg="$msg"
+		#msg=$(printf "Installation of \"%s\" requires a script.\n" "$column2_value_progname")
+		#log_msg --msg="$msg"
 		#call_install_script
-		if call_script "$column2_value_progname" "$index"; then
-		    #update the status
-		    update_ppa_soft_array "$index" 8 1
-		    create_log 1 "$index"
-		else
-		    #we are not storing the error message that was returned during the script call
-		    update_ppa_soft_array "$index" 8 0
-		    create_log 0 "$index"
+		if ! call_script "$column2_value_progname" "$index"; then
 		    return 1
 		fi
 	    else
@@ -584,16 +572,10 @@ install_soft() {
 		    fi
 
 		    #post installation processing
-		    if [ "$retVal" -eq 0 ]; then
-			#update the status
-			update_ppa_soft_array "$index" 8 1
-			create_log 1 "$index"
-		    else
-			msg=$(printf "Following error occurred when trying to install software \"%s\": \n%s\n" "$soft" "$result")
+		    if [ "$retVal" -ne 0 ]; then
+			msg=$(printf "Error occurred when trying to install software \"%s\": \n%s\n" "$soft" "$result")
 			log_msg -e --msg="$msg" --line="$2"
-			#we are not storing the error message that was returned during the script call
-			update_ppa_soft_array "$index" 8 0
-			create_log 0 "$index"
+			return 1
 		    fi
 		fi
 	    fi
@@ -660,8 +642,13 @@ install_softs() {
 
 	    #install the current line if the PPA was added successfully
 	    if install_soft "$index"; then
+		update_ppa_soft_array "$index" 8 1
 		return "$next_index"
 	    else
+		update_ppa_soft_array "$index" 8 0
+		msg=$(printf "Installation of \"%s\" failed." "$column1_value_name")
+		log_msg -e --msg="$msg"
+		create_log 0 "$index"
 		return -1
 	    fi
 	else
