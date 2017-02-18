@@ -439,7 +439,7 @@ add_ppas() {
 		    next_index="$ret_value"
 		else
 		    get_column_values "$ppa_line"
-		    msg=$(printf "Skipping processing entry for \"%s\" as 1 or more dependency entry failed to be processed." "$column1_value_name")
+		    msg=$(printf "Skipping processing entry for \"%s\" as one or more dependency entry failed to be processed." "$column1_value_name")
 		    log_msg -e --msg="$msg"
 		    update_ppa_soft_array "$index" 7 0
 		    create_log 0 "$index"
@@ -503,18 +503,17 @@ call_script(){
     local retVal=0
     msg=$(printf "call_script(): calling \"bash %s\"\n" "$script_path")
     log_msg --msg="$msg"
-    local result=$(bash "$script_path" 2>&1)
-    printf "Result is %s\n" "$result"
+    local result=1
+    result=$(. "$script_path" 2>&1)
     retVal=$?
-    printf "retVal is %s\n" "$retVal"
     if [ "$retVal" -eq 0 ]; then
 	#update_ppa_soft_array "$index" 8 1
 	create_log 1 "$index"
     else
-	msg="$(printf "install_soft(): The following error occurred when calling script for software \"%s\": \n%s\n" "$soft" "$result")"
+	msg="$(printf "Error occurred running script for software \"%s\": %s" "$soft" "$result")"
 	log_msg -e --msg="$msg"
 	#we are not storing the error message that was returned during the script call
-	#update_ppa_soft_array "$index" 8 0
+	update_ppa_soft_array "$index" 8 0
 	create_log 0 "$index"
 	return 1	
     fi
@@ -654,7 +653,7 @@ install_softs() {
 		else		    
 		    get_column_values "$ppa_line"
 		    update_ppa_soft_array "$index" 8 0
-		    msg=$(printf "Skipping installation of \"%s\" as 1 or more dependencies failed to install." "$column1_value_name")
+		    msg=$(printf "Skipping installation of \"%s\" as one or more dependencies failed to install." "$column1_value_name")
 		    log_msg -e --msg="$msg"
 		    create_log 0 "$index"
 		    return -1
