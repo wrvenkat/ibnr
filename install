@@ -504,6 +504,7 @@ call_script(){
     msg=$(printf "call_script(): calling \"bash %s\"\n" "$script_path")
     log_msg --msg="$msg"
     local result=$(bash "$script_path" 2>&1)
+    printf "Result is %s\n" "$result"
     retVal=$?
     printf "retVal is %s\n" "$retVal"
     if [ "$retVal" -eq 0 ]; then
