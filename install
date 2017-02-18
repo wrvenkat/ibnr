@@ -722,6 +722,7 @@ install_all_softs(){
 
     #we only refresh if there was anything to be added
     if [ "$ADD_FLG" -eq 1 ]; then
+	local re
 	#refresh the repository for upgrades
 	log_msg --msg="Refreshing repository..."
 	#fix anything that may be broken
@@ -737,7 +738,7 @@ install_all_softs(){
 	
 	log_msg --msg="Installing any updates after refresh..."
 	status=$(sudo apt-get upgrade 2>&1)
-	if [ "$status" -ne 0 ]; then
+	if [ $? -ne 0 ]; then
 	    msg=$(printf "Something went wrong when upgrading. Status: %s" "$status")
 	    log_msg -e --msg="$msg"
 	    return 1
