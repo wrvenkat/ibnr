@@ -519,7 +519,8 @@ call_script(){
     if ! [ -a "$script_path" ]; then
 	msg=$(printf "No install script found for %s." "$soft")
 	log_msg -e --msg="$msg"
-	return 1    fi
+	return 1
+    fi
 
     local retVal=0
     msg=$(printf "Running install script \"bash %s\" for \"%s\"\n" "$script_path" "$soft")
