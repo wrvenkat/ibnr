@@ -240,10 +240,20 @@ create_log() {
 		local_success=0
 	    fi
 	else
-	    if [ "$column7_value_ppastatus" -eq "$success" ]; then
-		local_success=1
+	    #if we're checking the PPA column, then we let logging for successful 
+	    #PPA status proceed ONLY IF we're not also installing
+	    if [ "$success" -eq 1 ] && [ "$INSTALL_FLG" -eq 0 ]; then		
+		if [ "$column7_value_ppastatus" -eq "$success" ]; then
+		    local_success=1
+		else
+		    local_success=0
+		fi
 	    else
-		local_success=0
+		if [ "$column7_value_ppastatus" -eq "$success" ]; then
+		    local_success=1
+		else
+		    local_success=0
+		fi
 	    fi
 	fi
 	
