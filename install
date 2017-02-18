@@ -244,14 +244,13 @@ create_log() {
 	else
 	    #if we're checking the PPA column, then we let logging for successful 
 	    #PPA status proceed ONLY IF we're not also installing
-	    if [ "$success" -eq 1 ] && [ "$INSTALL_FLG" -ne 1 ]; then
-		printf "In hererer\n"
+	    if [ "$success" -eq 0 ]; then
 		if [ "$column7_value_ppastatus" -eq "$success" ]; then
 		    local_success=1
 		else
 		    local_success=0
 		fi
-	    else
+	    elif [ "$success" -eq 1 ] && [ "$INSTALL_FLG" -ne 1 ]; then
 		if [ "$column7_value_ppastatus" -eq "$success" ]; then
 		    local_success=1
 		else
