@@ -512,8 +512,6 @@ call_script(){
     else
 	msg="$(printf "Error occurred running script for software \"%s\": %s" "$soft" "$result")"
 	log_msg -e --msg="$msg"
-	#we are not storing the error message that was returned during the script call
-	update_ppa_soft_array "$index" 8 0
 	create_log 0 "$index"
 	return 1	
     fi
