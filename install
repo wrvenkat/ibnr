@@ -501,7 +501,7 @@ call_script(){
     fi
 
     local retVal=0
-    msg=$(printf "Running install script for \"bash %s\"\n" "$script_path")
+    msg=$(printf "Running install script \"bash %s\" for \"%s\"\n" "$script_path" "$soft")
     log_msg --msg="$msg"
     local result=1
     result=$(. "$script_path" 2>&1)
