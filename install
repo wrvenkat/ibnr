@@ -749,7 +749,7 @@ install_all_softs(){
 	fi
 	
 	log_msg --msg="Installing any updates after refresh..."
-	status=$(sudo apt-get upgrade 2>&1)
+	status=$(sudo apt-get upgrade -y 2>&1)
 	if [ $? -ne 0 ]; then
 	    msg=$(printf "Something went wrong when upgrading. Status: %s" "$status")
 	    log_msg -e --msg="$msg"
