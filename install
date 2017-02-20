@@ -383,7 +383,7 @@ add_ppa() {
 	IFS="$orig_IFS"
 	
 	#check if it is not present already
-	if (grep -q "$ppa_url" /etc/apt/*.list /etc/apt/sources.list.d/* >> /dev/null 2>&1); then
+	if grep -q "$ppa_url" /etc/apt/*.list /etc/apt/sources.list.d/* >> /dev/null 2>&1; then
 	    update_ppa_soft_array "$index" 7 1
 	    msg=$(printf "PPA \"%s\" already present in the repository." "$ppa")
 	    log_msg --msg="$msg"
@@ -747,7 +747,7 @@ install_all_softs(){
 	fi
 	
 	log_msg --msg="Installing any updates after refresh..."
-	status=$(sudo apt-get upgrade -y 2>&1)
+	status=$(sudo apt-get upgrade -y --allow-unauthenticated 2>&1)
 	if [ $? -ne 0 ]; then
 	    msg=$(printf "Something went wrong when upgrading. Status: %s" "$status")
 	    log_msg -e --msg="$msg"
